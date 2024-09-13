@@ -1,12 +1,18 @@
 <script setup lang="ts">
 import { ref } from "vue"
-import { bookListStore } from "./store"
+import { bookListStore, userSessionStore } from "./store"
 import { useI18n } from "vue-i18n"
+import { supabase } from "./plugins/supabase"
+import router from "./router"
 
 const { locale } = useI18n({ useScope: "global" })
-
 const store = bookListStore()
+const userSession = userSessionStore()
 store.getBooks()
+
+supabase.auth.onAuthStateChange((event, session) => {
+  userSession.session = session
+})
 
 const changeLocale = () => {
   if (locale.value === "en") {
@@ -86,6 +92,14 @@ const menuitems = ref([
               rounded
               outlined
               @click="changeLocale()"
+            />
+            <Button
+              v-if="userSession.session"
+              icon="pi pi-plus"
+              rounded
+              outlined
+              @click="() => router.push({ path: '/addbook' })"
+              class="ml-2"
             />
           </div>
         </template>

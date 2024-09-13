@@ -4,14 +4,17 @@ import { createHead } from "@unhead/vue"
 import i18n from "./plugins/i18n"
 import "./style.scss"
 import App from "./App.vue"
+import piniaPluginPersistedstate from "pinia-plugin-persistedstate"
 
 import PrimeVue from "primevue/config"
 import { definePreset } from "@primevue/themes"
 import Aura from "@primevue/themes/aura"
 import DialogService from "primevue/dialogservice"
+import ToastService from "primevue/toastservice"
 import router from "./router"
 
 const pinia = createPinia()
+pinia.use(piniaPluginPersistedstate)
 const head = createHead()
 const app = createApp(App)
 
@@ -43,6 +46,7 @@ app.use(PrimeVue, {
   },
 })
 app.use(DialogService)
+app.use(ToastService)
 app.use(router)
 
 app.mount("#app")

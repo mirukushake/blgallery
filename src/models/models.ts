@@ -10,13 +10,14 @@ export interface Metadata {
   status: Status[]
   labels: Labels[]
   locations: Locations[]
-  authors: Authors[]
+  authors: MetadataAuthors[]
   tone: Tone[]
   seme: Seme[]
   uke: Uke[]
   settei: Settei[]
   play: Play[]
   tags: Tags[]
+  series: Series[]
 }
 
 export interface Book {
@@ -24,21 +25,20 @@ export interface Book {
   chil_url: string | null
   cover: string | null
   id: number
+  manga: boolean
   label_id: number | null
   location_id: number | null
-  type: boolean
   notes: string | null
-  published: string
+  published: string | null
   rating: number | null
   series_id: number | null
   series_no: number | null
   status_id: number
   title: string
-  status: Status | langKey | null
+  status: Status | langKey
   label: Labels | null
   series: Series | null
   location: Locations | null
-  read: ReadDates[] | null
   authors: Authors[] | null
   tone: Tone[] | null
   seme: Seme[] | null
@@ -46,14 +46,23 @@ export interface Book {
   settei: Settei[] | null
   play: Play[] | null
   tags: Tags[] | null
+  read: string[]
+  author_sort: string | null
+}
+
+export interface MetadataAuthors {
+  id: number
+  name: string
+  reading: string
+  illustrator: boolean | null
 }
 
 export interface Authors {
-  en: string | null
   id: number
-  illustrator: boolean | null
   name: string
   reading: string
+  illustrator: boolean | null
+  order: number
 }
 
 export interface Labels {
@@ -75,10 +84,6 @@ export interface Play {
   ja: string
   order: number | null
   parent: number | null
-}
-
-export interface ReadDates {
-  read_date: string
 }
 
 export interface Seme {

@@ -188,11 +188,7 @@ useHead({
           key="id"
           class="flex items-center mr-4"
         >
-          <Checkbox
-            v-model="selectedStatus"
-            :inputId="item.id"
-            :value="item.id"
-          />
+          <Checkbox v-model="selectedStatus" :value="item.id" />
           <label for="item" class="ml-1">{{
             item[locale as keyof LocaleName]
           }}</label>

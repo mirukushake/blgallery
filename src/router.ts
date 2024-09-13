@@ -1,5 +1,6 @@
 import { createWebHistory, createRouter } from "vue-router"
 import { RouteRecordRaw } from "vue-router"
+import { userSessionStore } from "./store"
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -24,15 +25,37 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import("./components/Wishlist.vue"),
   },
   {
-    path: "/stats",
-    name: "stats",
-    component: () => import("./components/Stats.vue"),
+    path: "/secret",
+    name: "secret",
+    component: () => import("./components/Secret.vue"),
+  },
+  {
+    path: "/addbook",
+    name: "addbook",
+    component: () => import("./components/AddBook.vue"),
+    meta: {
+      needsAuth: true,
+    },
   },
 ]
 
 const router = createRouter({
   history: createWebHistory(),
   routes,
+})
+
+router.beforeEach((to, from, next) => {
+  const userSession = userSessionStore()
+
+  if (to.meta.needsAuth) {
+    if (userSession.session) {
+      return next()
+    } else {
+      return next("/secret")
+    }
+  }
+
+  return next()
 })
 
 export default router

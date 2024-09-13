@@ -27,15 +27,18 @@ const selectedSeme = ref<number[]>([])
 const selectedUke = ref<number[]>([])
 const selectedStatus = ref<number[]>([])
 const selectedTags = ref<number[]>([])
+const newest = ref(false)
 
 const filteredBooks = computed(() => {
   return records.value
     .filter(
       (book: any) =>
         book.title.toLowerCase().includes(keyword.value.toLowerCase()) ||
-        book.authors.some((author: any) =>
-          author.name.toLowerCase().includes(keyword.value.toLowerCase())
-        )
+        (book.authors
+          ? book.authors.some((author: any) =>
+              author.name.toLowerCase().includes(keyword.value.toLowerCase())
+            )
+          : false)
     )
     .filter(
       (item: any) =>
@@ -72,6 +75,11 @@ const filteredBooks = computed(() => {
         !selectedStatus.value.length ||
         selectedStatus.value.includes(item.status_id)
     )
+    .sort((a: any, b: any) => {
+      if (newest.value === true) {
+        return b.added.localeCompare(a.added)
+      }
+    })
 })
 
 const statusColor = (status: number) => {
@@ -90,7 +98,7 @@ const statusColor = (status: number) => {
 }
 
 const showBookInfo = (info: any) => {
-  const dialogRef = dialog.open(BookInfo, {
+  dialog.open(BookInfo, {
     data: info,
     props: {
       header: info.title,
@@ -132,6 +140,9 @@ useHead({
       <span>{{ filteredBooks.length }} results</span>
     </template>
     <div class="mt-4 flex flex-col">
+      <div class="flex mb-4">
+        Newest first <ToggleSwitch v-model="newest" class="ml-4" />
+      </div>
       <MultiSelect
         v-model="selectedTone"
         display="chip"
@@ -188,11 +199,7 @@ useHead({
           key="id"
           class="flex items-center mr-4"
         >
-          <Checkbox
-            v-model="selectedStatus"
-            :inputId="item.id"
-            :value="item.id"
-          />
+          <Checkbox v-model="selectedStatus" :value="item.id" />
           <label for="item" class="ml-1">{{
             item[locale as keyof LocaleName]
           }}</label>
@@ -200,13 +207,12 @@ useHead({
       </div>
     </div>
   </Panel>
-
   <DataView
     :value="filteredBooks"
     data-key="id"
     layout="grid"
     class="!border-none"
-    v-if="!loading"
+    v-if="!loading && filteredBooks"
     :lazy="true"
   >
     <template #grid="slotProps">
@@ -219,7 +225,7 @@ useHead({
             <template #header
               ><span v-if="item.cover"
                 ><img
-                  alt="book cover"
+                  :alt="`${item.title.ja} cover`"
                   :src="item.cover"
                   class="object-cover object-right-top h-56 w-full rounded-t-md"
               /></span>
@@ -250,7 +256,8 @@ useHead({
             <template #subtitle
               ><div>
                 <span
-                  v-for="(author, index) in item.authors"
+                  v-if="item.authors"
+                  v-for="(author, index) in item.authors.sort((a: any, b: any) => a.order - b.order)"
                   :class="{ 'ml-2': index > 0 }"
                   >{{ author.name }}</span
                 >
@@ -271,9 +278,9 @@ useHead({
                 >
               </div>
               <div class="mt-2">
-                <Tag :severity="item.type === false ? 'secondary' : 'info'"
+                <Tag :severity="item.manga === false ? 'secondary' : 'info'"
                   ><div>
-                    {{ item.type === false ? t("novel") : t("manga") }}
+                    {{ item.manga === false ? t("novel") : t("manga") }}
                   </div></Tag
                 >
               </div></template
