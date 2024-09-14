@@ -34,8 +34,6 @@ const selectedTags = ref<number[]>([])
 const monthReading = ref(false)
 const newest = ref(false)
 
-const currentMonth = dayjs().month() + 1
-
 const filteredBooks = computed(() => {
   return records.value
     .filter(
@@ -163,7 +161,7 @@ useHead({
           Month's reading <ToggleSwitch v-model="monthReading" class="ml-4" />
         </div>
       </div>
-      <span class="flex gap-4"
+      <span class="flex flex-wrap lg:flex-nowrap gap-4"
         ><MultiSelect
           v-model="selectedTone"
           display="chip"
@@ -172,7 +170,7 @@ useHead({
           :option-label="locale === 'ja' ? 'ja' : 'en'"
           filter
           placeholder="Select tone"
-          class="w-6/12 mb-4" />
+          class="w-full lg:w-6/12 mb-4" />
         <MultiSelect
           v-model="selectedSettei"
           display="chip"
@@ -181,9 +179,9 @@ useHead({
           :option-label="locale === 'ja' ? 'ja' : 'en'"
           filter
           placeholder="Select tropes/settings"
-          class="w-6/12 mb-4"
+          class="w-full lg:w-6/12 mb-4"
       /></span>
-      <span class="flex gap-4">
+      <span class="flex flex-wrap lg:flex-nowrap gap-4">
         <MultiSelect
           v-model="selectedSeme"
           display="chip"
@@ -192,7 +190,7 @@ useHead({
           :option-label="locale === 'ja' ? 'ja' : 'en'"
           filter
           placeholder="Select seme traits"
-          class="w-6/12 mb-4"
+          class="w-full lg:w-6/12 mb-4"
         />
         <MultiSelect
           v-model="selectedUke"
@@ -202,7 +200,7 @@ useHead({
           :option-label="locale === 'ja' ? 'ja' : 'en'"
           filter
           placeholder="Select uke traits"
-          class="w-6/12 mb-4"
+          class="w-full lg:w-6/12 mb-4"
         />
       </span>
       <MultiSelect
@@ -213,9 +211,9 @@ useHead({
         :option-label="locale === 'ja' ? 'ja' : 'en'"
         filter
         placeholder="Select tags"
-        class="w-6/12 mb-4"
+        class="w-full lg:w-6/12 mb-4"
       />
-      <div class="flex w-6/12 mb-4">
+      <div class="flex flex-wrap w-full lg:w-6/12 mb-4">
         <span
           v-for="item of metadata?.status"
           key="id"
@@ -238,7 +236,9 @@ useHead({
     :lazy="true"
   >
     <template #grid="slotProps">
-      <div class="grid grid-cols-6 gap-4 auto-rows-fr">
+      <div
+        class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-4 auto-rows-fr"
+      >
         <div v-for="item in slotProps.items" :key="item.id" class="">
           <Card
             class="h-full hover:shadow-md cursor-pointer"
@@ -248,7 +248,7 @@ useHead({
               ><span v-if="item.cover"
                 ><img
                   :alt="`${item.title.ja} cover`"
-                  :src="item.cover"
+                  v-lazy="item.cover"
                   class="object-cover object-right-top h-56 w-full rounded-t-md"
               /></span>
               <span v-else

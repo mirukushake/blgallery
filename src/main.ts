@@ -5,6 +5,7 @@ import i18n from "./plugins/i18n"
 import "./style.scss"
 import App from "./App.vue"
 import piniaPluginPersistedstate from "pinia-plugin-persistedstate"
+import lazyLoad from "vue3-lazyload"
 
 import PrimeVue from "primevue/config"
 import { definePreset } from "@primevue/themes"
@@ -45,6 +46,7 @@ app.use(PrimeVue, {
     options: {},
   },
 })
+app.use(lazyLoad, {})
 app.use(DialogService)
 app.use(ToastService)
 app.use(router)
