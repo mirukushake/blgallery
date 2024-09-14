@@ -4,7 +4,7 @@ import { ref, computed } from "vue"
 import { Book, Metadata } from "./models/models"
 import { AuthSession } from "@supabase/supabase-js"
 
-const env = import.meta.env.VITE_SUPABASE_ANON_KEY
+const env = import.meta.env.VITE_ENV
 
 export const userSessionStore = defineStore({
   id: "userSession",
