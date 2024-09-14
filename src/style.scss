@@ -7,3 +7,14 @@
 html {
   font-size: 10pt;
 }
+
+.p-multiselect {
+  min-width: 17rem;
+}
+.p-multiselect-label {
+  display: flex;
+  flex-wrap: wrap;
+}
+.p-multiselect-token {
+  margin: 0.1rem;
+}

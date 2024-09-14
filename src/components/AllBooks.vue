@@ -5,6 +5,10 @@ import { storeToRefs } from "pinia"
 import { useDialog } from "primevue/usedialog"
 import { useHead } from "@unhead/vue"
 import { useI18n } from "vue-i18n"
+import dayjs from "dayjs"
+import isBetween from "dayjs/plugin/isBetween"
+
+dayjs.extend(isBetween)
 
 const { t, locale } = useI18n({ useScope: "global" })
 
@@ -27,7 +31,10 @@ const selectedSeme = ref<number[]>([])
 const selectedUke = ref<number[]>([])
 const selectedStatus = ref<number[]>([])
 const selectedTags = ref<number[]>([])
+const monthReading = ref(false)
 const newest = ref(false)
+
+const currentMonth = dayjs().month() + 1
 
 const filteredBooks = computed(() => {
   return records.value
@@ -74,6 +81,15 @@ const filteredBooks = computed(() => {
       (item: any) =>
         !selectedStatus.value.length ||
         selectedStatus.value.includes(item.status_id)
+    )
+    .filter(
+      (item: any) =>
+        monthReading.value === false ||
+        (item.read &&
+          dayjs(item.read[0]).isBetween(
+            `${dayjs().year()}-${dayjs().month() + 1}-01`,
+            `${dayjs().year()}-${dayjs().month() + 1}-${dayjs().daysInMonth()}`
+          ))
     )
     .sort((a: any, b: any) => {
       if (newest.value === true) {
@@ -130,7 +146,12 @@ useHead({
       <div class="w-3 h-3 bg-gray-500 rounded-full"></div>
     </div>
   </div>
-
+  {{
+    dayjs("2024-09-09").isBetween(
+      `${dayjs().year()}-${dayjs().month() + 1}-01`,
+      `${dayjs().year()}-${dayjs().month() + 1}-${dayjs().daysInMonth()}`
+    )
+  }}
   <Panel toggleable class="mb-10" :collapsed="true" v-if="loading === false">
     <template #header>
       <IconField>
@@ -140,49 +161,56 @@ useHead({
       <span>{{ filteredBooks.length }} results</span>
     </template>
     <div class="mt-4 flex flex-col">
-      <div class="flex mb-4">
-        Newest first <ToggleSwitch v-model="newest" class="ml-4" />
+      <div class="flex mb-4 gap-4">
+        <div class="flex items-center">
+          Newest first <ToggleSwitch v-model="newest" class="ml-4" />
+        </div>
+        <div class="flex items-center">
+          Month's reading <ToggleSwitch v-model="monthReading" class="ml-4" />
+        </div>
       </div>
-      <MultiSelect
-        v-model="selectedTone"
-        display="chip"
-        :options="metadata?.tone"
-        option-value="id"
-        :option-label="locale === 'ja' ? 'ja' : 'en'"
-        filter
-        placeholder="Select tone"
-        class="w-6/12 mb-4"
-      />
-      <MultiSelect
-        v-model="selectedSettei"
-        display="chip"
-        :options="metadata?.settei"
-        option-value="id"
-        :option-label="locale === 'ja' ? 'ja' : 'en'"
-        filter
-        placeholder="Select tropes/settings"
-        class="w-6/12 mb-4"
-      />
-      <MultiSelect
-        v-model="selectedSeme"
-        display="chip"
-        :options="metadata?.seme"
-        option-value="id"
-        :option-label="locale === 'ja' ? 'ja' : 'en'"
-        filter
-        placeholder="Select seme traits"
-        class="w-6/12 mb-4"
-      />
-      <MultiSelect
-        v-model="selectedUke"
-        display="chip"
-        :options="metadata?.uke"
-        option-value="id"
-        :option-label="locale === 'ja' ? 'ja' : 'en'"
-        filter
-        placeholder="Select uke traits"
-        class="w-6/12 mb-4"
-      />
+      <span class="flex gap-4"
+        ><MultiSelect
+          v-model="selectedTone"
+          display="chip"
+          :options="metadata?.tone"
+          option-value="id"
+          :option-label="locale === 'ja' ? 'ja' : 'en'"
+          filter
+          placeholder="Select tone"
+          class="w-6/12 mb-4" />
+        <MultiSelect
+          v-model="selectedSettei"
+          display="chip"
+          :options="metadata?.settei"
+          option-value="id"
+          :option-label="locale === 'ja' ? 'ja' : 'en'"
+          filter
+          placeholder="Select tropes/settings"
+          class="w-6/12 mb-4"
+      /></span>
+      <span class="flex gap-4">
+        <MultiSelect
+          v-model="selectedSeme"
+          display="chip"
+          :options="metadata?.seme"
+          option-value="id"
+          :option-label="locale === 'ja' ? 'ja' : 'en'"
+          filter
+          placeholder="Select seme traits"
+          class="w-6/12 mb-4"
+        />
+        <MultiSelect
+          v-model="selectedUke"
+          display="chip"
+          :options="metadata?.uke"
+          option-value="id"
+          :option-label="locale === 'ja' ? 'ja' : 'en'"
+          filter
+          placeholder="Select uke traits"
+          class="w-6/12 mb-4"
+        />
+      </span>
       <MultiSelect
         v-model="selectedTags"
         display="chip"

@@ -147,6 +147,7 @@ async function submitAuthor() {
 }
 
 async function submitBook() {
+  loading.value = true
   const bodyData = {
     ...bookForm.value,
     read: bookForm.value.read
@@ -192,7 +193,7 @@ async function submitBook() {
       chil_url: null,
     }
 
-    store.getBooks()
+    await store.getBooks()
 
     selectedAuthors.value = []
     selectedPlay.value = []
@@ -201,8 +202,11 @@ async function submitBook() {
     selectedTags.value = []
     selectedTone.value = []
     selectedUke.value = []
+    jsonData.value = ""
 
     showAlert()
+
+    loading.value = false
   }
 }
 
@@ -488,12 +492,11 @@ const autoFill = () => {
         <Button
           type="button"
           label="Save"
-          :disabled="loading"
+          :loading="loading"
           @click="submitBook"
           class="mt-4"
         ></Button>
         <div class="mt-8">
-          {{ jsonData }}
           <br />
           <Textarea v-model="jsonData" rows="2" cols="30" /><br />
           <Button type="button" label="Fill data" @click="autoFill"></Button>

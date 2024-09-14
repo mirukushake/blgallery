@@ -36,6 +36,7 @@ declare module 'vue' {
     ScrollTop: typeof import('primevue/scrolltop')['default']
     Secret: typeof import('./src/components/Secret.vue')['default']
     Select: typeof import('primevue/select')['default']
+    Slider: typeof import('primevue/slider')['default']
     Tab: typeof import('primevue/tab')['default']
     TabList: typeof import('primevue/tablist')['default']
     TabPanel: typeof import('primevue/tabpanel')['default']
