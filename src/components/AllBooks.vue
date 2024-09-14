@@ -146,12 +146,6 @@ useHead({
       <div class="w-3 h-3 bg-gray-500 rounded-full"></div>
     </div>
   </div>
-  {{
-    dayjs("2024-09-09").isBetween(
-      `${dayjs().year()}-${dayjs().month() + 1}-01`,
-      `${dayjs().year()}-${dayjs().month() + 1}-${dayjs().daysInMonth()}`
-    )
-  }}
   <Panel toggleable class="mb-10" :collapsed="true" v-if="loading === false">
     <template #header>
       <IconField>
