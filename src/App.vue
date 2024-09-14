@@ -43,11 +43,6 @@ const menuitems = ref([
     icon: "pi pi-heart",
     route: "/wishlist",
   },
-  {
-    label: "Stats",
-    icon: "pi pi-chart-bar",
-    route: "/stats",
-  },
 ])
 </script>
 

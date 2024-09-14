@@ -42,7 +42,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install
       - name: Build
-        run: pnpm run build
+        run: pnpm run build cp dist/index.html dist/404.html ls dist/
         env:
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           VITE_BASEURL: ${{ secrets.VITE_BASEURL }}
