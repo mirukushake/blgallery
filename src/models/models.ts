@@ -179,3 +179,12 @@ export interface Full {
   width: number
   height: number
 }
+
+export interface Stats {
+  locations: any[]
+  booksByMonth: any[]
+  authorStats: any[]
+  faveSeme: any[]
+  faveUke: any[]
+  faveSettei: any[]
+}

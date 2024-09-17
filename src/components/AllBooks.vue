@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, defineAsyncComponent } from "vue"
+import { breakpointsTailwind, useBreakpoints } from "@vueuse/core"
 import { bookListStore } from "../store"
 import { storeToRefs } from "pinia"
 import { useDialog } from "primevue/usedialog"
@@ -11,6 +12,8 @@ import isBetween from "dayjs/plugin/isBetween"
 dayjs.extend(isBetween)
 
 const { t, locale } = useI18n({ useScope: "global" })
+const breakpoints = useBreakpoints(breakpointsTailwind)
+const mobileDialog = breakpoints.smaller("sm")
 
 interface LocaleName {
   ja: string
@@ -18,7 +21,7 @@ interface LocaleName {
 }
 
 const store = bookListStore()
-const { bookshelf: records, loading, metadata } = storeToRefs(store)
+const { records, loading, metadata } = storeToRefs(store)
 
 const BookInfo = defineAsyncComponent(
   () => import("../components/BookInfo.vue")
@@ -116,14 +119,20 @@ const showBookInfo = (info: any) => {
     data: info,
     props: {
       header: info.title,
-      style: {
-        width: "70vw",
-      },
-      breakpoints: {
-        "960px": "90vw",
-        "640px": "100vw",
-      },
+      draggable: false,
+      blockScroll: false,
+      // breakpoints: {
+      //   "960px": "90vw",
+      //   "640px": "100vw",
+      // },
       modal: true,
+      pt: {
+        root: {
+          class: mobileDialog.value
+            ? "p-dialog-maximized fixed top-0 left-0 overflow-y-auto"
+            : "w-7/12",
+        },
+      },
     },
   })
 }

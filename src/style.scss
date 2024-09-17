@@ -18,3 +18,18 @@ html {
 .p-multiselect-token {
   margin: 0.1rem;
 }
+
+body {
+  font-family: "M PLUS Rounded 1c", ui-sans-serif, system-ui, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+.p-dialog-maximized {
+  width: 100vw !important;
+  height: 100dvh !important;
+  top: 0px !important;
+  left: 0px !important;
+  max-height: 100dvh;
+  height: 100%;
+  border-radius: 0;
+}

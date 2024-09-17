@@ -33,6 +33,11 @@ const routes: Array<RouteRecordRaw> = [
     path: "/addbook",
     name: "addbook",
     component: () => import("./components/AddBook.vue"),
+  },
+  {
+    path: "/stats",
+    name: "stats",
+    component: () => import("./components/Stats.vue"),
     meta: {
       needsAuth: true,
     },

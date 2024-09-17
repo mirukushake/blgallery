@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, Ref, inject } from "vue"
 import * as _ from "lodash"
-import { Dialog, Series } from "../models/models"
+import { Dialog, Series, MetadataAuthors } from "../models/models"
 import { useI18n } from "vue-i18n"
 import { storeToRefs } from "pinia"
 import { bookListStore, userSessionStore } from "../store"
@@ -39,7 +39,7 @@ const editRecordUpdated = ref({
   series_id: null,
   series_no: null,
   chil_url: null,
-  authors: null,
+  authors: [] as any[],
   read: null,
   tone: null,
   seme: null,
@@ -49,14 +49,24 @@ const editRecordUpdated = ref({
   tags: null,
 })
 const seriesVisible = ref(false)
+const authorVisible = ref(false)
 const newSeries = ref({
   ja: null,
   complete: false,
+})
+const newAuthor = ref({
+  name: null,
+  reading: null,
+  illustrator: false,
 })
 
 const seriesPop = ref()
 const seriesToggle = (event: any) => {
   seriesPop.value.toggle(event)
+}
+const authorPop = ref()
+const authorToggle = (event: any) => {
+  authorPop.value.toggle(event)
 }
 
 record.value = dialogRef?.value.data!
@@ -151,6 +161,33 @@ async function submitSeries() {
   }
 }
 
+async function submitAuthor() {
+  try {
+    const { data, isFetching, statusCode } = await apiFetch<MetadataAuthors>(
+      "/authors",
+      {
+        method: "POST",
+        body: JSON.stringify(newAuthor.value),
+      }
+    ).json()
+
+    console.log(data.value.data)
+
+    loading.value = isFetching.value
+    if (statusCode.value === 201 && data) {
+      metadata.value!.authors.push(data.value.data as MetadataAuthors)
+      editRecordUpdated.value.authors.push(data.value.data.id)
+    }
+  } catch (error) {
+    console.log(error)
+  } finally {
+    authorVisible.value = false
+    newAuthor.value.name = null
+    newAuthor.value.reading = null
+    newAuthor.value.illustrator = false
+  }
+}
+
 const showAlert = () => {
   toast.add({
     severity: "success",
@@ -162,10 +199,14 @@ const showAlert = () => {
 </script>
 
 <template>
-  <div class="flex flex-row w-full mb-6" v-if="record && !editMode">
-    <div class="w-4/12 mr-8">
+  <div class="flex flex-col md:flex-row w-full mb-6" v-if="record && !editMode">
+    <div class="w-full md:w-4/12 md:mr-8">
       <div v-if="record.cover">
-        <img alt="book cover" :src="record.cover" class="object-top w-full" />
+        <img
+          alt="book cover"
+          :src="record.cover"
+          class="object-contain md:object-top w-full h-96 md:h-auto"
+        />
       </div>
       <div v-else>
         <span
@@ -225,8 +266,8 @@ const showAlert = () => {
           </span>
         </span>
         <span>
-          <span class="flex">
-            <span class="mr-6">
+          <span class="flex flex-wrap gap-x-6">
+            <span class="">
               <dt class="text-sm text-gray-400 uppercase">status</dt>
               <dd class="mb-4">
                 {{ record.status![locale as keyof LocaleName] }}
@@ -236,7 +277,7 @@ const showAlert = () => {
                 >
               </dd>
             </span>
-            <span class="mr-6">
+            <span class="">
               <dt class="text-sm text-gray-400 uppercase">location</dt>
               <dd class="mb-4" v-if="record.location">
                 {{ record.location.ja }}
@@ -246,7 +287,7 @@ const showAlert = () => {
               <dt class="text-sm text-gray-400 uppercase">date added</dt>
               <dd class="mb-4">{{ record.added }}</dd>
             </span>
-            <span class="ml-6">
+            <span class="">
               <dt class="text-sm text-gray-400 uppercase">date(s) read</dt>
               <dd class="mb-4">
                 <span
@@ -263,7 +304,7 @@ const showAlert = () => {
             <Tag
               v-for="(tag, index) in record.seme"
               severity="secondary"
-              :class="{ 'ml-2': index > 0 }"
+              :class="{ 'mr-2 mb-2': index !== record.seme.length - 1 }"
               >{{ tag[locale as keyof LocaleName] }}</Tag
             >
           </dd>
@@ -272,7 +313,7 @@ const showAlert = () => {
             <Tag
               v-for="(tag, index) in record.uke"
               severity="secondary"
-              :class="{ 'ml-2': index > 0 }"
+              :class="{ 'mr-2 mb-2': index !== record.uke.length - 1 }"
               >{{ tag[locale as keyof LocaleName] }}</Tag
             >
           </dd>
@@ -281,7 +322,7 @@ const showAlert = () => {
             <Tag
               v-for="(tag, index) in record.settei"
               severity="secondary"
-              :class="{ 'ml-2': index > 0 }"
+              :class="{ 'mr-2 mb-2': index !== record.settei.length - 1 }"
               >{{ tag[locale as keyof LocaleName] }}</Tag
             >
           </dd>
@@ -290,7 +331,7 @@ const showAlert = () => {
             <Tag
               v-for="(tag, index) in record.tone"
               severity="secondary"
-              :class="{ 'ml-2': index > 0 }"
+              :class="{ 'mr-2 mb-2': index !== record.tone.length - 1 }"
               >{{ tag[locale as keyof LocaleName] }}</Tag
             >
           </dd>
@@ -299,7 +340,7 @@ const showAlert = () => {
             <Tag
               v-for="(tag, index) in record.play"
               severity="secondary"
-              :class="{ 'ml-2': index > 0 }"
+              :class="{ 'mr-2 mb-2': index !== record.play.length - 1 }"
               >{{ tag[locale as keyof LocaleName] }}</Tag
             >
           </dd>
@@ -308,7 +349,7 @@ const showAlert = () => {
             <Tag
               v-for="(tag, index) in record.tags"
               severity="secondary"
-              :class="{ 'ml-2': index > 0 }"
+              :class="{ 'mr-2 mb-2': index !== record.tags.length - 1 }"
               >{{ tag[locale as keyof LocaleName] }}</Tag
             >
           </dd>
@@ -318,10 +359,14 @@ const showAlert = () => {
       </dl>
     </div>
   </div>
-  <div class="flex flex-row w-full mb-6" v-if="record && editMode">
-    <div class="w-4/12 mr-8">
+  <div class="flex flex-col md:flex-row w-full mb-6" v-if="record && editMode">
+    <div class="w-full md:w-4/12 md:mr-8">
       <div v-if="record.cover">
-        <img alt="book cover" :src="record.cover" class="object-top w-full" />
+        <img
+          alt="book cover"
+          :src="record.cover"
+          class="object-contain md:object-top w-full h-96 md:h-auto"
+        />
       </div>
       <div v-else>
         <span
@@ -349,7 +394,7 @@ const showAlert = () => {
         type="text"
         size="small"
         placeholder="Cover"
-        class="w-full"
+        class="w-full mb-4"
       />
     </div>
 
@@ -376,6 +421,60 @@ const showAlert = () => {
             placeholder="Select authors"
             class=""
           />
+          <Button
+            icon="pi pi-plus"
+            rounded
+            aria-label="Filter"
+            @click="authorToggle"
+            class="ml-4"
+          />
+          <Popover ref="authorPop">
+            <div class="flex items-center gap-4 mb-4 w-96 md:w-auto">
+              <label for="authorname" class="font-semibold w-24"
+                >Author name</label
+              >
+              <InputText
+                id="authorname"
+                class="flex-auto w-80"
+                v-model="newAuthor.name"
+              />
+            </div>
+            <div class="flex items-center gap-4 mb-8">
+              <label for="authorreading" class="font-semibold w-24"
+                >Reading</label
+              >
+              <InputText
+                id="authorreading"
+                class="flex-auto w-80"
+                v-model="newAuthor.reading"
+              />
+            </div>
+            <div class="flex items-center gap-4 mb-8">
+              <label for="authorillust" class="font-semibold w-24"
+                >Illustrator</label
+              >
+              <ToggleButton
+                v-model="newAuthor.illustrator"
+                onLabel="Yes"
+                offLabel="No"
+                id="authorillust"
+              />
+            </div>
+            <div class="flex justify-end gap-2">
+              <Button
+                type="button"
+                label="Cancel"
+                severity="secondary"
+                @click="authorToggle"
+              ></Button>
+              <Button
+                type="button"
+                label="Save"
+                :disabled="loading"
+                @click="submitAuthor"
+              ></Button>
+            </div>
+          </Popover>
         </dd>
         <span>
           <dt class="text-sm text-gray-400 uppercase">series</dt>
@@ -403,13 +502,13 @@ const showAlert = () => {
               class="ml-4"
             />
             <Popover ref="seriesPop">
-              <div class="flex items-center gap-4 mb-4">
+              <div class="flex items-center gap-4 mb-4 w-96 md:w-auto">
                 <label for="seriesname" class="font-semibold w-24"
                   >Series name</label
                 >
                 <InputText
                   id="seriesname"
-                  class="flex-auto"
+                  class="flex-auto w-80"
                   v-model="newSeries.ja"
                 />
               </div>
@@ -441,7 +540,7 @@ const showAlert = () => {
             </Popover>
           </dd>
         </span>
-        <span class="flex">
+        <span class="flex flex-wrap">
           <span class="mr-6">
             <dt class="text-sm text-gray-400 uppercase">type</dt>
             <dd class="mb-4">
@@ -475,12 +574,13 @@ const showAlert = () => {
                 v-model="editRecordUpdated.published"
                 type="text"
                 placeholder="Published"
+                class="w-36"
               />
             </dd>
           </span>
         </span>
         <span>
-          <span class="flex">
+          <span class="flex flex-wrap">
             <span class="mr-6">
               <dt class="text-sm text-gray-400 uppercase">status</dt>
               <dd class="mb-4">
@@ -521,11 +621,11 @@ const showAlert = () => {
                 />
               </dd>
             </span>
-            <span class="">
+            <span class="mr-6">
               <dt class="text-sm text-gray-400 uppercase">date added</dt>
               <dd class="mb-4">{{ record.added }}</dd>
             </span>
-            <span class="ml-6">
+            <span class="md:ml-6">
               <dt class="text-sm text-gray-400 uppercase">date(s) read</dt>
               <!-- change to simple array later -->
 
@@ -534,6 +634,7 @@ const showAlert = () => {
                   v-model="editRecordUpdated.read"
                   type="text"
                   placeholder="Read"
+                  class="w-36"
                 />
               </dd>
             </span>

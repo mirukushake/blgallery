@@ -96,6 +96,14 @@ const menuitems = ref([
               @click="() => router.push({ path: '/addbook' })"
               class="ml-2"
             />
+            <Button
+              v-if="userSession.session"
+              icon="pi pi-chart-bar"
+              rounded
+              outlined
+              @click="() => router.push({ path: '/stats' })"
+              class="ml-2"
+            />
           </div>
         </template>
       </Menubar>
