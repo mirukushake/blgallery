@@ -16,6 +16,21 @@ export const userSessionStore = defineStore({
   },
 })
 
+export const filterStore = defineStore({
+  id: "filterStore",
+  state: () => ({
+    keyword: "" as string,
+    selectedSettei: [] as number[],
+    selectedTone: [] as number[],
+    selectedSeme: [] as number[],
+    selectedUke: [] as number[],
+    selectedStatus: [] as number[],
+    selectedTags: [] as number[],
+    monthReading: false as boolean | string | undefined,
+    newest: false as boolean | string | undefined,
+  }),
+})
+
 export const bookListStore = defineStore(
   "books",
   () => {
@@ -46,6 +61,7 @@ export const bookListStore = defineStore(
 
     async function getBooks() {
       try {
+        loading.value = true
         const { data: books, isFetching: booksLoading } = await apiFetch(
           "/books",
           {
@@ -64,10 +80,12 @@ export const bookListStore = defineStore(
         }).json()
 
         metadata.value = metadataList.value?.data
-        loading.value = booksLoading.value
+        // loading.value = booksLoading.value
         statsInfo.value = stats.value.data
       } catch (error) {
         console.log(error)
+      } finally {
+        loading.value = false
       }
     }
 

@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { ref, Ref, inject } from "vue"
-import * as _ from "lodash"
+import toPairs from "lodash/toPairs"
+import fromPairs from "lodash/fromPairs"
+import cloneDeep from "lodash/cloneDeep"
+import differenceWith from "lodash/differenceWith"
+import isEqual from "lodash/isEqual"
 import { Dialog, Series, MetadataAuthors } from "../models/models"
 import { useI18n } from "vue-i18n"
 import { storeToRefs } from "pinia"
@@ -93,18 +97,18 @@ function enterEdit() {
     read: record.value.read ? record.value.read[0] : null,
   }
 
-  editRecordOriginal.value = _.cloneDeep(format)
-  editRecordUpdated.value = _.cloneDeep(format)
+  editRecordOriginal.value = cloneDeep(format)
+  editRecordUpdated.value = cloneDeep(format)
 }
 
 async function submitBook() {
-  const newObj = _.differenceWith(
-    _.toPairs(editRecordUpdated.value),
-    _.toPairs(editRecordOriginal.value),
-    _.isEqual
+  const newObj = differenceWith(
+    toPairs(editRecordUpdated.value),
+    toPairs(editRecordOriginal.value),
+    isEqual
   )
 
-  const editValues = _.fromPairs(newObj) as any
+  const editValues = fromPairs(newObj) as any
 
   if (editValues.authors) {
     const map = editValues.authors.map((x: any, index: number) => ({

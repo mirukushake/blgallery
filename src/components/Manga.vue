@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, defineAsyncComponent } from "vue"
 import { breakpointsTailwind, useBreakpoints } from "@vueuse/core"
-import { bookListStore } from "../store"
+import { bookListStore, filterStore } from "../store"
 import { storeToRefs } from "pinia"
 import { useDialog } from "primevue/usedialog"
 import { useHead } from "@unhead/vue"
@@ -21,21 +21,27 @@ interface LocaleName {
 }
 
 const store = bookListStore()
-const { mangaOnly: records, loading, metadata } = storeToRefs(store)
+const { mangaOnly: records, loading } = storeToRefs(store)
+const search = filterStore()
+const {
+  keyword,
+  selectedSeme,
+  selectedSettei,
+  selectedStatus,
+  selectedTags,
+  selectedTone,
+  selectedUke,
+  monthReading,
+  newest,
+} = storeToRefs(search)
 
 const BookInfo = defineAsyncComponent(
   () => import("../components/BookInfo.vue")
 )
 const dialog = useDialog()
-const keyword = ref("")
-const selectedSettei = ref<number[]>([])
-const selectedTone = ref<number[]>([])
-const selectedSeme = ref<number[]>([])
-const selectedUke = ref<number[]>([])
-const selectedStatus = ref<number[]>([])
-const selectedTags = ref<number[]>([])
-const monthReading = ref(false)
-const newest = ref(false)
+const count = computed(() => {
+  return filteredBooks.value.length
+})
 
 const filteredBooks = computed(() => {
   return records.value
@@ -96,7 +102,6 @@ const filteredBooks = computed(() => {
       }
     })
 })
-
 const statusColor = (status: number) => {
   switch (status) {
     case 2:
@@ -152,100 +157,20 @@ useHead({
     </div>
   </div>
 
-  <Panel toggleable class="mb-10" :collapsed="true" v-if="loading === false">
-    <template #header>
-      <IconField>
-        <InputIcon class="pi pi-search" />
-        <InputText v-model="keyword" placeholder="Search" class="" />
-      </IconField>
-      <span>{{ filteredBooks.length }} results</span>
-    </template>
-    <div class="mt-4 flex flex-col">
-      <div class="flex mb-4 gap-4">
-        <div class="flex items-center">
-          Newest first <ToggleSwitch v-model="newest" class="ml-4" />
-        </div>
-        <div class="flex items-center">
-          Month's reading <ToggleSwitch v-model="monthReading" class="ml-4" />
-        </div>
-      </div>
-      <span class="flex flex-wrap lg:flex-nowrap gap-4"
-        ><MultiSelect
-          v-model="selectedTone"
-          display="chip"
-          :options="metadata?.tone"
-          option-value="id"
-          :option-label="locale === 'ja' ? 'ja' : 'en'"
-          filter
-          placeholder="Select tone"
-          class="w-full lg:w-6/12 mb-4" />
-        <MultiSelect
-          v-model="selectedSettei"
-          display="chip"
-          :options="metadata?.settei"
-          option-value="id"
-          :option-label="locale === 'ja' ? 'ja' : 'en'"
-          filter
-          placeholder="Select tropes/settings"
-          class="w-full lg:w-6/12 mb-4"
-      /></span>
-      <span class="flex flex-wrap lg:flex-nowrap gap-4">
-        <MultiSelect
-          v-model="selectedSeme"
-          display="chip"
-          :options="metadata?.seme"
-          option-value="id"
-          :option-label="locale === 'ja' ? 'ja' : 'en'"
-          filter
-          placeholder="Select seme traits"
-          class="w-full lg:w-6/12 mb-4"
-        />
-        <MultiSelect
-          v-model="selectedUke"
-          display="chip"
-          :options="metadata?.uke"
-          option-value="id"
-          :option-label="locale === 'ja' ? 'ja' : 'en'"
-          filter
-          placeholder="Select uke traits"
-          class="w-full lg:w-6/12 mb-4"
-        />
-      </span>
-      <MultiSelect
-        v-model="selectedTags"
-        display="chip"
-        :options="metadata?.tags"
-        option-value="id"
-        :option-label="locale === 'ja' ? 'ja' : 'en'"
-        filter
-        placeholder="Select tags"
-        class="w-full lg:w-6/12 mb-4"
-      />
-      <div class="flex flex-wrap w-full lg:w-6/12 mb-4">
-        <span
-          v-for="item of metadata?.status"
-          key="id"
-          class="flex items-center mr-4"
-        >
-          <Checkbox v-model="selectedStatus" :value="item.id" />
-          <label for="item" class="ml-1">{{
-            item[locale as keyof LocaleName]
-          }}</label>
-        </span>
-      </div>
-    </div>
-  </Panel>
+  <FilterBar v-if="loading === false && filteredBooks" :count="count" />
 
   <DataView
+    :lazy="true"
     :value="filteredBooks"
     data-key="id"
     layout="grid"
     class="!border-none"
-    v-if="!loading"
-    :lazy="true"
+    v-if="loading === false && filteredBooks"
   >
     <template #grid="slotProps">
-      <div class="grid grid-cols-6 gap-4 auto-rows-fr">
+      <div
+        class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-4 auto-rows-fr"
+      >
         <div v-for="item in slotProps.items" :key="item.id" class="">
           <Card
             class="h-full hover:shadow-md cursor-pointer"
@@ -254,8 +179,8 @@ useHead({
             <template #header
               ><span v-if="item.cover"
                 ><img
-                  alt="book cover"
-                  :src="item.cover"
+                  :alt="`${item.title.ja} cover`"
+                  v-lazy="item.cover"
                   class="object-cover object-right-top h-56 w-full rounded-t-md"
               /></span>
               <span v-else
@@ -285,7 +210,8 @@ useHead({
             <template #subtitle
               ><div>
                 <span
-                  v-for="(author, index) in item.authors"
+                  v-if="item.authors"
+                  v-for="(author, index) in item.authors.sort((a: any, b: any) => a.order - b.order)"
                   :class="{ 'ml-2': index > 0 }"
                   >{{ author.name }}</span
                 >
@@ -306,9 +232,9 @@ useHead({
                 >
               </div>
               <div class="mt-2">
-                <Tag :severity="item.type === false ? 'secondary' : 'info'"
+                <Tag :severity="item.manga === false ? 'secondary' : 'info'"
                   ><div>
-                    {{ item.type === false ? t("novel") : t("manga") }}
+                    {{ item.manga === false ? t("novel") : t("manga") }}
                   </div></Tag
                 >
               </div></template

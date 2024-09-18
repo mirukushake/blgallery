@@ -188,3 +188,18 @@ export interface Stats {
   faveUke: any[]
   faveSettei: any[]
 }
+
+export interface LocaleName {
+  ja: string
+  en: string
+}
+
+export interface Filter {
+  keyword: string
+  selectedSettei: number[]
+  selectedTone: number[]
+  selectedSeme: number[]
+  selectedUke: number[]
+  selectedStatus: number[]
+  selectedTags: number[]
+}
