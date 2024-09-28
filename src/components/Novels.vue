@@ -31,10 +31,6 @@ const {
   newest,
 } = storeToRefs(search)
 
-const count = computed(() => {
-  return filteredBooks.value.length
-})
-
 const BookInfo = defineAsyncComponent(
   () => import("../components/BookInfo.vue")
 )
@@ -105,6 +101,22 @@ const filteredBooks = computed(() => {
     })
 })
 
+const count = computed(() => {
+  return filteredBooks.value.length
+})
+
+const page = ref(0)
+const limit = ref(60)
+const offset = computed(() => Number(limit.value * page.value))
+
+async function onPageChange(event: any) {
+  page.value = event.page
+}
+
+const paginationData = computed(() => {
+  return filteredBooks.value.slice(offset.value, offset.value + limit.value)
+})
+
 const statusColor = (status: number) => {
   switch (status) {
     case 2:
@@ -161,10 +173,15 @@ useHead({
 
   <FilterBar v-if="loading === false && filteredBooks" :count="count" />
   <DataView
-    :lazy="true"
-    :value="filteredBooks"
+    lazy
+    :value="paginationData"
     data-key="id"
     layout="grid"
+    paginator
+    :first="offset"
+    :rows="limit"
+    :total-records="count"
+    @page="onPageChange($event)"
     class="!border-none"
     v-if="loading === false && filteredBooks"
   >
