@@ -28,10 +28,14 @@ provide(THEME_KEY, "light")
 import { bookListStore } from "../store"
 import { storeToRefs } from "pinia"
 const store = bookListStore()
-const { statsInfo } = storeToRefs(store)
+const { statsInfo, records } = storeToRefs(store)
 
 const locationData = computed(() => {
   return statsInfo.value!.locations
+})
+
+const ratingData = computed(() => {
+  return statsInfo.value!.ratings
 })
 
 const timeData = computed(() => {
@@ -40,28 +44,44 @@ const timeData = computed(() => {
     name: dayjs(x.name).format("MMM"),
   }))
 })
-
 const authorRatingData = computed(() => {
   return statsInfo
     .value!.authorStats.filter((x: any) => x.count >= 2)
     .sort((a: any, b: any) => b.rating - a.rating)
-    .slice(0, 24)
+    .slice(0, 29)
 })
-
 const authorCountData = computed(() => {
   return statsInfo
     .value!.authorStats.sort((a: any, b: any) => b.count - a.count)
-    .slice(0, 24)
+    .slice(0, 29)
 })
 
 const semeData = computed(() => {
-  return statsInfo.value!.faveSeme.slice(0, 24)
+  return statsInfo.value!.faveSeme.slice(0, 29)
 })
 const ukeData = computed(() => {
-  return statsInfo.value!.faveUke.slice(0, 24)
+  return statsInfo.value!.faveUke.slice(0, 29)
 })
 const setteiData = computed(() => {
-  return statsInfo.value!.faveSettei.slice(0, 24)
+  return statsInfo.value!.faveSettei.slice(0, 29)
+})
+
+const tsundoku = computed(() => {
+  return {
+    all: records.value.filter((x: any) => x.status_id === 2).length,
+    manga: records.value.filter(
+      (x: any) => x.status_id === 2 && x.manga === true
+    ).length,
+    novels: records.value.filter(
+      (x: any) => x.status_id === 2 && x.manga === false
+    ).length,
+    digital: records.value.filter(
+      (x: any) => x.status_id === 2 && x.location_id !== 14
+    ).length,
+    paper: records.value.filter(
+      (x: any) => x.status_id === 2 && x.location_id === 14
+    ).length,
+  }
 })
 
 const locationOptions = ref({
@@ -89,7 +109,31 @@ const locationOptions = ref({
     },
   ],
 })
-
+const ratingOptions = ref({
+  title: {
+    text: "Ratings",
+    left: "center",
+  },
+  tooltip: {
+    trigger: "item",
+    formatter: "{a} <br/>{b} : {c} ({d}%)",
+    textStyle: {
+      fontFamily: "M PLUS Rounded 1c, ui-sans-serif",
+    },
+  },
+  series: [
+    {
+      name: "Rating",
+      type: "pie",
+      radius: ["30%", "60%"],
+      data: ratingData,
+      label: {
+        overflow: "break",
+        fontFamily: "M PLUS Rounded 1c, ui-sans-serif",
+      },
+    },
+  ],
+})
 const timeOptions = ref({
   title: {
     text: "Volumes read per month",
@@ -123,7 +167,6 @@ const timeOptions = ref({
   ],
   height: "50%",
 })
-
 const authorRatingOptions = ref({
   title: {
     text: "Authors/illustrators by average rating (2 or more read)",
@@ -156,7 +199,6 @@ const authorRatingOptions = ref({
   ],
   height: "50%",
 })
-
 const authorCountOptions = ref({
   title: {
     text: "Authors/illustrators by volumes read",
@@ -189,7 +231,6 @@ const authorCountOptions = ref({
   ],
   height: "50%",
 })
-
 const faveSemeOptions = ref({
   title: {
     text: "Fave seme traits (4+ rating)",
@@ -222,7 +263,6 @@ const faveSemeOptions = ref({
   ],
   height: "50%",
 })
-
 const faveUkeOptions = ref({
   title: {
     text: "Fave uke traits (4+ rating)",
@@ -255,7 +295,6 @@ const faveUkeOptions = ref({
   ],
   height: "50%",
 })
-
 const faveSetteiOptions = ref({
   title: {
     text: "Fave setting/situations/tropes (4+ rating)",
@@ -292,16 +331,47 @@ const faveSetteiOptions = ref({
 
 <template>
   <div v-if="statsInfo">
-    <Tabs value="0">
+    <Tabs value="4">
       <TabList>
+        <Tab value="4">Overview</Tab>
         <Tab value="0">Reading stats</Tab>
         <Tab value="1">Locations</Tab>
         <Tab value="2">Author stats</Tab>
         <Tab value="3">Tag stats</Tab>
       </TabList>
       <TabPanels>
+        <TabPanel value="4">
+          <div class="flex gap-4">
+            <Fieldset legend="Unread total">
+              <p class="m-0" v-if="records">
+                {{ tsundoku.all }}
+              </p>
+            </Fieldset>
+            <Fieldset legend="Unread manga">
+              <p class="m-0" v-if="records">
+                {{ tsundoku.manga }}
+              </p>
+            </Fieldset>
+            <Fieldset legend="Unread novels">
+              <p class="m-0" v-if="records">
+                {{ tsundoku.novels }}
+              </p>
+            </Fieldset>
+            <Fieldset legend="Unread digital">
+              <p class="m-0" v-if="records">
+                {{ tsundoku.digital }}
+              </p>
+            </Fieldset>
+            <Fieldset legend="Unread paper">
+              <p class="m-0" v-if="records">
+                {{ tsundoku.paper }}
+              </p>
+            </Fieldset>
+          </div>
+        </TabPanel>
         <TabPanel value="0">
           <v-chart class="chart" :option="timeOptions" autoresize />
+          <v-chart class="chart" :option="ratingOptions" autoresize />
         </TabPanel>
         <TabPanel value="1">
           <v-chart class="chart" :option="locationOptions" autoresize />
@@ -323,6 +393,6 @@ const faveSetteiOptions = ref({
 <style scoped>
 .chart {
   height: 50vh;
-  width: 100vw;
+  width: 100%;
 }
 </style>

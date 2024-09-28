@@ -26,6 +26,7 @@ const {
   selectedTags,
   selectedTone,
   selectedUke,
+  selectedPlay,
   monthReading,
   newest,
 } = storeToRefs(search)
@@ -78,6 +79,12 @@ const filteredBooks = computed(() => {
         !selectedTags.value.length ||
         (item.tags &&
           item.tags.some((b: any) => selectedTags.value.includes(b.id)))
+    )
+    .filter(
+      (item: any) =>
+        !selectedPlay.value.length ||
+        (item.play &&
+          item.play.some((b: any) => selectedPlay.value.includes(b.id)))
     )
     .filter(
       (item: any) =>
@@ -157,7 +164,7 @@ useHead({
 
   <FilterBar v-if="loading === false && filteredBooks" :count="count" />
   <DataView
-    :lazy="true"
+    lazy
     :value="filteredBooks"
     data-key="id"
     layout="grid"
@@ -168,7 +175,7 @@ useHead({
       <div
         class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-4 auto-rows-fr"
       >
-        <div v-for="item in slotProps.items" :key="item.id" class="">
+        <div v-for="(item, index) in slotProps.items" :key="index" class="">
           <Card
             class="h-full hover:shadow-md cursor-pointer"
             @click="showBookInfo(item)"

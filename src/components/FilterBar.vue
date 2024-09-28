@@ -19,6 +19,7 @@ const {
   selectedTags,
   selectedTone,
   selectedUke,
+  selectedPlay,
   monthReading,
   newest,
 } = storeToRefs(search)
@@ -101,17 +102,28 @@ watch(
           placeholder="Select uke traits"
           class="w-full lg:w-6/12 mb-4"
         />
+        <MultiSelect
+          v-model="selectedPlay"
+          display="chip"
+          :options="metadata?.play"
+          option-value="id"
+          :option-label="locale === 'ja' ? 'ja' : 'en'"
+          filter
+          placeholder="Select play"
+          class="w-full lg:w-6/12 mb-4"
+        />
+        <MultiSelect
+          v-model="selectedTags"
+          display="chip"
+          :options="metadata?.tags"
+          option-value="id"
+          :option-label="locale === 'ja' ? 'ja' : 'en'"
+          filter
+          placeholder="Select tags"
+          class="w-full lg:w-6/12 mb-4"
+        />
       </span>
-      <MultiSelect
-        v-model="selectedTags"
-        display="chip"
-        :options="metadata?.tags"
-        option-value="id"
-        :option-label="locale === 'ja' ? 'ja' : 'en'"
-        filter
-        placeholder="Select tags"
-        class="w-full lg:w-6/12 mb-4"
-      />
+
       <div class="flex flex-wrap w-full lg:w-6/12 mb-4">
         <span
           v-for="item of metadata?.status"

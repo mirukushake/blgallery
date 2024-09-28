@@ -26,6 +26,7 @@ const {
   selectedTags,
   selectedTone,
   selectedUke,
+  selectedPlay,
   monthReading,
   newest,
 } = storeToRefs(search)
@@ -70,6 +71,12 @@ const filteredBooks = computed(() => {
         !selectedSettei.value.length ||
         (item.settei &&
           item.settei.some((b: any) => selectedSettei.value.includes(b.id)))
+    )
+    .filter(
+      (item: any) =>
+        !selectedPlay.value.length ||
+        (item.play &&
+          item.play.some((b: any) => selectedPlay.value.includes(b.id)))
     )
     .filter(
       (item: any) =>

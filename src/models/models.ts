@@ -187,6 +187,7 @@ export interface Stats {
   faveSeme: any[]
   faveUke: any[]
   faveSettei: any[]
+  ratings: any[]
 }
 
 export interface LocaleName {
@@ -202,4 +203,5 @@ export interface Filter {
   selectedUke: number[]
   selectedStatus: number[]
   selectedTags: number[]
+  selectedPlay: number[]
 }

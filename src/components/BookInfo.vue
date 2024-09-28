@@ -732,6 +732,7 @@ const showAlert = () => {
         label="Save"
         :disabled="loading"
         @click="submitBook"
+        @keyup.enter="submitBook"
         class="mt-4"
       ></Button>
     </div>

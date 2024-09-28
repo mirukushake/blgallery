@@ -17,6 +17,7 @@ declare module 'vue' {
     DatePicker: typeof import('primevue/datepicker')['default']
     Dialog: typeof import('primevue/dialog')['default']
     DynamicDialog: typeof import('primevue/dynamicdialog')['default']
+    Fieldset: typeof import('primevue/fieldset')['default']
     FilterBar: typeof import('./src/components/FilterBar.vue')['default']
     FloatLabel: typeof import('primevue/floatlabel')['default']
     IconField: typeof import('primevue/iconfield')['default']

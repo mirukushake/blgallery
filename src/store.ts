@@ -26,6 +26,7 @@ export const filterStore = defineStore({
     selectedUke: [] as number[],
     selectedStatus: [] as number[],
     selectedTags: [] as number[],
+    selectedPlay: [] as number[],
     monthReading: false as boolean | string | undefined,
     newest: false as boolean | string | undefined,
   }),

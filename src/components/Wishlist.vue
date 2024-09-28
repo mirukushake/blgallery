@@ -18,6 +18,7 @@ const {
   selectedTags,
   selectedTone,
   selectedUke,
+  selectedPlay,
   monthReading,
   newest,
 } = storeToRefs(search)
@@ -66,10 +67,21 @@ const filteredBooks = computed(() => {
     )
     .filter(
       (item: any) =>
+        !selectedPlay.value.length ||
+        (item.play &&
+          item.play.some((b: any) => selectedPlay.value.includes(b.id)))
+    )
+    .filter(
+      (item: any) =>
         !selectedTags.value.length ||
         (item.tags &&
           item.tags.some((b: any) => selectedTags.value.includes(b.id)))
     )
+    .sort((a: any, b: any) => {
+      if (newest.value === true) {
+        return b.added.localeCompare(a.added)
+      }
+    })
 })
 
 const statusColor = (status: number) => {
