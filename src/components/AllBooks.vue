@@ -93,7 +93,7 @@ const filteredBooks = computed(() => {
         monthReading.value === false ||
         (item.read &&
           dayjs(item.read[0]).isBetween(
-            `${dayjs().year()}-${dayjs().month()}-01`,
+            `${dayjs().year()}-${dayjs().month() + 1}-01`,
             `${dayjs().year()}-${dayjs().month() + 1}-${dayjs().daysInMonth()}`,
             "day",
             "[]"
@@ -109,6 +109,12 @@ const filteredBooks = computed(() => {
 const count = computed(() => {
   return filteredBooks.value.length
 })
+
+function dateRange() {
+  return `${dayjs().year()}-${dayjs().month()}-01 to ${dayjs().year()}-${
+    dayjs().month() + 1
+  }-${dayjs().daysInMonth()}`
+}
 
 const page = ref(0)
 const limit = ref(60)
@@ -177,6 +183,7 @@ useHead({
     </div>
   </div>
 
+  {{ dateRange() }}
   <FilterBar v-if="loading === false && filteredBooks" :count="count" />
   <DataView
     lazy

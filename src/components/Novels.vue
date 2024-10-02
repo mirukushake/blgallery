@@ -90,7 +90,7 @@ const filteredBooks = computed(() => {
         monthReading.value === false ||
         (item.read &&
           dayjs(item.read[0]).isBetween(
-            `${dayjs().year()}-${dayjs().month()}-01`,
+            `${dayjs().year()}-${dayjs().month() + 1}-01`,
             `${dayjs().year()}-${dayjs().month() + 1}-${dayjs().daysInMonth()}`,
             "day",
             "[]"
