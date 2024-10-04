@@ -110,12 +110,6 @@ const count = computed(() => {
   return filteredBooks.value.length
 })
 
-function dateRange() {
-  return `${dayjs().year()}-${dayjs().month()}-01 to ${dayjs().year()}-${
-    dayjs().month() + 1
-  }-${dayjs().daysInMonth()}`
-}
-
 const page = ref(0)
 const limit = ref(60)
 const offset = computed(() => Number(limit.value * page.value))
@@ -182,8 +176,6 @@ useHead({
       <div class="w-3 h-3 bg-gray-500 rounded-full"></div>
     </div>
   </div>
-
-  {{ dateRange() }}
   <FilterBar v-if="loading === false && filteredBooks" :count="count" />
   <DataView
     lazy
