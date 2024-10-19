@@ -204,30 +204,30 @@ const getJSON = async () => {
 
   if (data.value.data) {
     const label = metadata.value?.labels.find(
-      (x) => x.ja === data.value.data.label
+      (x: any) => x.ja === data.value.data.label
     )
     const series = metadata.value?.series.find(
-      (x) => x.ja === data.value.data.series
+      (x: any) => x.ja === data.value.data.series
     )
 
     missingAuth.value = data.value.data.authors.filter(
-      (x) => !metadata.value.authors.some((b) => b.name === x)
+      (x: any) => !metadata.value?.authors.some((b) => b.name === x)
     )
       ? data.value.data.authors.filter(
-          (x) => !metadata.value.authors.some((b) => b.name === x)
+          (x: any) => !metadata.value?.authors.some((b) => b.name === x)
         )
       : []
 
     missingSettei.value = data.value.data.settei.filter(
-      (x) => !metadata.value.settei.some((b) => b.ja === x)
+      (x: any) => !metadata.value?.settei.some((b) => b.ja === x)
     )
       ? data.value.data.settei.filter(
-          (x) => !metadata.value.settei.some((b) => b.ja === x)
+          (x: any) => !metadata.value?.settei.some((b) => b.ja === x)
         )
       : []
 
     missingSeries.value = metadata.value?.series.find(
-      (x) => x.ja === data.value.data.series
+      (x: any) => x.ja === data.value.data.series
     )
       ? ""
       : data.value.data.series
@@ -526,8 +526,8 @@ function clearForm() {
             placeholder="Select tropes/settings"
             class="w-6/12 mb-4"
           />
-          <div v-if="missingSettei.value">
-            <span v-for="settei in missingSettei.value" class="pr-2">{{
+          <div v-if="missingSettei">
+            <span v-for="settei in missingSettei" class="pr-2">{{
               settei
             }}</span>
           </div>
