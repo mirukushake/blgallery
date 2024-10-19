@@ -55,7 +55,10 @@ const selectedUke = ref<number[]>([])
 const selectedPlay = ref<number[]>([])
 const selectedTags = ref<number[]>([])
 const imgPreview = ref<string>()
-const jsonData = ref("")
+const fetchUrl = ref<string>("")
+const missingAuth = ref([])
+const missingSeries = ref("")
+const missingSettei = ref([])
 
 const seriesVisible = ref(false)
 const authorVisible = ref(false)
@@ -78,13 +81,20 @@ const newSeries = ref({
   complete: false,
 })
 
-async function getImage(url: string) {
-  try {
-    const { data: image } = await useFetch(url, { method: "GET" }).blob()
-    imgPreview.value = URL.createObjectURL(image.value as Blob)
-  } catch (error) {
-    console.log(error)
-  }
+// async function getImage(url: string) {
+//   try {
+//     const { data: image } = await useFetch(url, { method: "GET" }).blob()
+//     imgPreview.value = URL.createObjectURL(image.value as Blob)
+//   } catch (error) {
+//     console.log(error)
+//   }
+// }
+
+function goToAmazon() {
+  window.open(
+    `https://www.amazon.co.jp/s?k=${bookForm.value.title}&__mk_ja_JP=%E3%82%AB%E3%82%BF%E3%82%AB%E3%83%8A&crid=21O74T07MTUGT&sprefix=9784199011436%2Caps%2C363&ref=nb_sb_noss`,
+    "_blank"
+  )
 }
 
 const showAlert = () => {
@@ -165,7 +175,6 @@ async function submitBook() {
     selectedTags: [...new Set(selectedTags.value)],
   }
 
-  console.log(JSON.stringify(bodyData))
   try {
     const { isFetching, statusCode } = await apiFetch("/books", {
       method: "POST",
@@ -177,48 +186,53 @@ async function submitBook() {
   } catch (error) {
     console.log(error)
   } finally {
-    bookForm.value = {
-      title: null,
-      manga: true,
-      location_id: null,
-      label_id: null,
-      status_id: 1,
-      series_id: null,
-      series_no: null,
-      published: null,
-      read: null,
-      rating: null,
-      notes: null,
-      cover: null,
-      chil_url: null,
-    }
-
     await store.getBooks()
-
-    selectedAuthors.value = []
-    selectedPlay.value = []
-    selectedSeme.value = []
-    selectedSettei.value = []
-    selectedTags.value = []
-    selectedTone.value = []
-    selectedUke.value = []
-    jsonData.value = ""
-
+    clearForm()
     showAlert()
 
     loading.value = false
   }
 }
 
-const autoFill = () => {
-  const json = JSON.parse(jsonData.value)
+const getJSON = async () => {
+  const { data, isFetching, statusCode } = await apiFetch(
+    `/datafetch?url=${fetchUrl.value}`,
+    {
+      method: "GET",
+    }
+  ).json()
 
-  if (json) {
-    const status = metadata.value?.status.find((x) => x.en === json.status)
-    const label = metadata.value?.labels.find((x) => x.ja === json.label)
-    const series = metadata.value?.series.find((x) => x.ja === json.series)
+  if (data.value.data) {
+    const label = metadata.value?.labels.find(
+      (x) => x.ja === data.value.data.label
+    )
+    const series = metadata.value?.series.find(
+      (x) => x.ja === data.value.data.series
+    )
 
-    const newAuth = json.authors
+    missingAuth.value = data.value.data.authors.filter(
+      (x) => !metadata.value.authors.some((b) => b.name === x)
+    )
+      ? data.value.data.authors.filter(
+          (x) => !metadata.value.authors.some((b) => b.name === x)
+        )
+      : []
+
+    missingSettei.value = data.value.data.settei.filter(
+      (x) => !metadata.value.settei.some((b) => b.ja === x)
+    )
+      ? data.value.data.settei.filter(
+          (x) => !metadata.value.settei.some((b) => b.ja === x)
+        )
+      : []
+
+    missingSeries.value = metadata.value?.series.find(
+      (x) => x.ja === data.value.data.series
+    )
+      ? ""
+      : data.value.data.series
+
+    const newAuth = data.value.data.authors
       .map((x: any) => {
         let item = metadata.value?.authors.find((item) => item.name === x)
         if (item) {
@@ -227,7 +241,7 @@ const autoFill = () => {
       })
       .filter((item: any) => item !== undefined)
 
-    const newTone = json.tone
+    const newTone = data.value.data.tone
       .map((x: any) => {
         let item = metadata.value?.tone.find((item) => item.ja === x)
         if (item) {
@@ -236,7 +250,7 @@ const autoFill = () => {
       })
       .filter((item: any) => item !== undefined)
 
-    const newSeme = json.seme
+    const newSeme = data.value.data.seme
       .map((x: any) => {
         let item = metadata.value?.seme.find((item) => item.ja === x)
         if (item) {
@@ -245,7 +259,7 @@ const autoFill = () => {
       })
       .filter((item: any) => item !== undefined)
 
-    const newUke = json.uke
+    const newUke = data.value.data.uke
       .map((x: any) => {
         let item = metadata.value?.uke.find((item) => item.ja === x)
         if (item) {
@@ -254,7 +268,7 @@ const autoFill = () => {
       })
       .filter((item: any) => item !== undefined)
 
-    const newSettei = json.settei
+    const newSettei = data.value.data.settei
       .map((x: any) => {
         let item = metadata.value?.settei.find((item) => item.ja === x)
         if (item) {
@@ -263,19 +277,48 @@ const autoFill = () => {
       })
       .filter((item: any) => item !== undefined)
 
-    bookForm.value.title = json.title
-    bookForm.value.published = json.published
-    bookForm.value.status_id = status!.id
+    bookForm.value.title = data.value.data.title
+    bookForm.value.published = data.value.data.published
     bookForm.value.label_id = label ? label.id : null
     bookForm.value.series_id = series ? series.id : null
-    bookForm.value.manga = json.type === "漫画" ? true : false
-    bookForm.value.chil_url = json.url
+    bookForm.value.manga = data.value.data.manga
+    bookForm.value.chil_url = fetchUrl.value
     selectedAuthors.value = newAuth
     selectedTone.value = newTone
     selectedSeme.value = newSeme
     selectedUke.value = newUke
     selectedSettei.value = newSettei
   }
+}
+
+function clearForm() {
+  bookForm.value = {
+    title: null,
+    manga: true,
+    location_id: null,
+    label_id: null,
+    status_id: 1,
+    series_id: null,
+    series_no: null,
+    published: null,
+    read: null,
+    rating: null,
+    notes: null,
+    cover: null,
+    chil_url: null,
+  }
+
+  selectedAuthors.value = []
+  selectedPlay.value = []
+  selectedSeme.value = []
+  selectedSettei.value = []
+  selectedTags.value = []
+  selectedTone.value = []
+  selectedUke.value = []
+
+  missingAuth.value = []
+  missingSeries.value = ""
+  missingSettei.value = []
 }
 </script>
 
@@ -288,6 +331,23 @@ const autoFill = () => {
     <TabPanels>
       <TabPanel value="addbook">
         <div v-if="metadata" id="newbookform">
+          <div class="mb-8">
+            <div>Add via URL</div>
+            <InputText id="fetchUrl" v-model="fetchUrl" class="w-4/12" />
+            <Button
+              class="ml-2"
+              type="button"
+              label="Get data"
+              @click="getJSON"
+            ></Button>
+            <Button
+              class="ml-2"
+              type="button"
+              label="Clear"
+              severity="danger"
+              @click="clearForm"
+            ></Button>
+          </div>
           <div>Title</div>
           <InputText id="title" v-model="bookForm.title" class="w-4/12" />
           <div class="mt-4">Cover</div>
@@ -299,9 +359,9 @@ const autoFill = () => {
           <InputGroup class="w-6/12">
             <InputText type="text" v-model="bookForm.cover" />
             <Button
-              icon="pi pi-download"
+              icon="pi pi-external-link"
               severity="primary"
-              @click="getImage(bookForm.cover as string)"
+              @click="goToAmazon"
             />
           </InputGroup>
           <div class="mt-4">Authors</div>
@@ -322,6 +382,9 @@ const autoFill = () => {
             @click="authorVisible = true"
             class="ml-4"
           />
+          <div v-if="missingAuth">
+            <span v-for="auth in missingAuth">{{ auth }}</span>
+          </div>
           <div class="mt-4">Series</div>
           <Select
             v-model="bookForm.series_id"
@@ -345,6 +408,7 @@ const autoFill = () => {
             inputId="series_no"
             class="w-2/12"
           />
+          <div v-if="missingSeries">{{ missingSeries }}</div>
           <div class="mt-4">Status</div>
           <div class="flex gap-4">
             <div
@@ -462,6 +526,11 @@ const autoFill = () => {
             placeholder="Select tropes/settings"
             class="w-6/12 mb-4"
           />
+          <div v-if="missingSettei.value">
+            <span v-for="settei in missingSettei.value" class="pr-2">{{
+              settei
+            }}</span>
+          </div>
           <div class="mt-4">Play</div>
           <MultiSelect
             v-model="selectedPlay"
@@ -496,11 +565,6 @@ const autoFill = () => {
           @click="submitBook"
           class="mt-4"
         ></Button>
-        <div class="mt-8">
-          <br />
-          <Textarea v-model="jsonData" rows="2" cols="30" /><br />
-          <Button type="button" label="Fill data" @click="autoFill"></Button>
-        </div>
       </TabPanel>
       <TabPanel value="bulk">
         <p class="m-0">
