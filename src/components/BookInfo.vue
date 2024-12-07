@@ -75,6 +75,12 @@ const authorToggle = (event: any) => {
 
 record.value = dialogRef?.value.data!
 
+function goToLink(url: string) {
+  if (url) {
+    window.open(url, "_blank")
+  }
+}
+
 function enterEdit() {
   editMode.value = true
 
@@ -102,6 +108,7 @@ function enterEdit() {
 }
 
 async function submitBook() {
+  loading.value = true
   const newObj = differenceWith(
     toPairs(editRecordUpdated.value),
     toPairs(editRecordOriginal.value),
@@ -128,7 +135,6 @@ async function submitBook() {
       }
     ).json()
     console.log(data.value.data)
-    loading.value = isFetching.value
     if (statusCode.value === 200 && data) {
       const target = records.value.find((x) => x.id === data.value.data[0].id)
       Object.assign(target as any, data.value.data[0])
@@ -137,7 +143,7 @@ async function submitBook() {
   } catch (error) {
     console.log(error)
   } finally {
-    showAlert()
+    loading.value = false
     editMode.value = false
   }
 }
@@ -232,6 +238,16 @@ const showAlert = () => {
               />
             </svg></div
         ></span>
+      </div>
+      <div class="mt-2">
+        <Button
+          icon="pi pi-external-link"
+          label="ちるちる"
+          :disabled="!record.chil_url"
+          size="small"
+          variant="outlined"
+          @click="goToLink(record.chil_url)"
+        />
       </div>
     </div>
 
@@ -400,6 +416,23 @@ const showAlert = () => {
         placeholder="Cover"
         class="w-full mb-4"
       />
+      <div class="mt-2">
+        <Button
+          icon="pi pi-external-link"
+          label="ちるちる"
+          :disabled="!record.chil_url"
+          size="small"
+          variant="outlined"
+          @click="goToLink(record.chil_url)"
+        />
+        <InputText
+          v-model="editRecordUpdated.chil_url"
+          type="text"
+          size="small"
+          placeholder="Chil-chil url"
+          class="w-full mb-4"
+        />
+      </div>
     </div>
 
     <div class="text-wrap">
@@ -730,7 +763,7 @@ const showAlert = () => {
       <Button
         type="button"
         label="Save"
-        :disabled="loading"
+        :loading="loading"
         @click="submitBook"
         @keyup.enter="submitBook"
         class="mt-4"
