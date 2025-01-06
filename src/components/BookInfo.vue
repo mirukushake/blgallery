@@ -10,11 +10,15 @@ import { useI18n } from "vue-i18n"
 import { storeToRefs } from "pinia"
 import { bookListStore, userSessionStore } from "../store"
 import { useToast } from "primevue/usetoast"
+import dayjs from "dayjs"
+import customParseFormat from "dayjs/plugin/customParseFormat"
 const store = bookListStore()
 const { apiFetch } = store
 const { records, metadata } = storeToRefs(store)
 const userSession = userSessionStore()
 const toast = useToast()
+
+dayjs.extend(customParseFormat)
 
 const { t, locale } = useI18n({ useScope: "global" })
 
@@ -100,7 +104,8 @@ function enterEdit() {
       : null,
     play: record.value.play ? record.value.play.map((t: any) => t.id) : null,
     tags: record.value.tags ? record.value.tags.map((t: any) => t.id) : null,
-    read: record.value.read ? record.value.read[0] : null,
+    read: record.value.read ? new Date(record.value.read[0]) : null,
+    published: record.value.published ? new Date(record.value.published) : null,
   }
 
   editRecordOriginal.value = cloneDeep(format)
@@ -125,6 +130,14 @@ async function submitBook() {
 
     editValues.authors = map
   }
+
+  editValues.read = editValues.read
+    ? dayjs(editValues.read).format("YYYY-MM-DD")
+    : null
+
+  editValues.published = editValues.published
+    ? dayjs(editValues.published).format("YYYY-MM-DD")
+    : null
 
   try {
     const { data, isFetching, statusCode } = await apiFetch(
@@ -607,10 +620,16 @@ const showAlert = () => {
           <span>
             <dt class="text-sm text-gray-400 uppercase">published</dt>
             <dd class="mb-4">
-              <InputText
+              <!-- <InputText
                 v-model="editRecordUpdated.published"
                 type="text"
                 placeholder="Published"
+                class="w-36"
+              /> -->
+              <DatePicker
+                v-model="editRecordUpdated.published"
+                dateFormat="yy/mm/dd"
+                showButtonBar
                 class="w-36"
               />
             </dd>
@@ -667,10 +686,16 @@ const showAlert = () => {
               <!-- change to simple array later -->
 
               <dd class="mb-4">
-                <InputText
+                <!-- <InputText
                   v-model="editRecordUpdated.read"
                   type="text"
                   placeholder="Read"
+                  class="w-36"
+                /> -->
+                <DatePicker
+                  v-model="editRecordUpdated.read"
+                  dateFormat="yy/mm/dd"
+                  showButtonBar
                   class="w-36"
                 />
               </dd>

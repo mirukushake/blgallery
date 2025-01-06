@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watch, ref, defineEmits, defineProps } from "vue"
+import { watch, ref, defineProps } from "vue"
 import { bookListStore, filterStore } from "../store"
 import { LocaleName } from "../models/models"
 import { storeToRefs } from "pinia"

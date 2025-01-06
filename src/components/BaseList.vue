@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, computed, defineAsyncComponent } from "vue"
+import { ref, computed, defineAsyncComponent, watch, defineProps } from "vue"
 import { breakpointsTailwind, useBreakpoints } from "@vueuse/core"
+import { Book } from "../models/models"
 import { bookListStore, filterStore } from "../store"
 import { storeToRefs } from "pinia"
 import { useDialog } from "primevue/usedialog"
@@ -8,15 +9,23 @@ import { useHead } from "@unhead/vue"
 import { useI18n } from "vue-i18n"
 import dayjs from "dayjs"
 import isBetween from "dayjs/plugin/isBetween"
-const breakpoints = useBreakpoints(breakpointsTailwind)
-const mobileDialog = breakpoints.smaller("sm")
-
+import { useRoute } from "vue-router"
 dayjs.extend(isBetween)
 
 const { t, locale } = useI18n({ useScope: "global" })
+const breakpoints = useBreakpoints(breakpointsTailwind)
+const mobileDialog = breakpoints.smaller("sm")
+
+interface Props {
+  storeName: string
+}
+
+const prop = defineProps<Props>()
+
+const books = ref<Book[]>([])
 
 const store = bookListStore()
-const { novelsOnly: records, loading } = storeToRefs(store)
+const { records, mangaOnly, novelsOnly, wishlist, loading } = storeToRefs(store)
 const search = filterStore()
 const {
   keyword,
@@ -31,18 +40,44 @@ const {
   newest,
 } = storeToRefs(search)
 
+const route = useRoute()
+watch(
+  () => route,
+  () => {
+    if (prop.storeName == "all") {
+      books.value = records.value
+    }
+
+    if (prop.storeName == "manga") {
+      books.value = mangaOnly.value
+    }
+
+    if (prop.storeName == "novels") {
+      books.value = novelsOnly.value
+    }
+
+    if (prop.storeName == "wishlist") {
+      books.value = wishlist.value
+    }
+  },
+  { flush: "pre", immediate: true, deep: true }
+)
+
 const BookInfo = defineAsyncComponent(
   () => import("../components/BookInfo.vue")
 )
 const dialog = useDialog()
+
 const filteredBooks = computed(() => {
-  return records.value
+  return books.value
     .filter(
       (book: any) =>
         book.title.toLowerCase().includes(keyword.value.toLowerCase()) ||
-        book.authors.some((author: any) =>
-          author.name.toLowerCase().includes(keyword.value.toLowerCase())
-        )
+        (book.authors
+          ? book.authors.some((author: any) =>
+              author.name.toLowerCase().includes(keyword.value.toLowerCase())
+            )
+          : false)
     )
     .filter(
       (item: any) =>
@@ -70,15 +105,15 @@ const filteredBooks = computed(() => {
     )
     .filter(
       (item: any) =>
-        !selectedPlay.value.length ||
-        (item.play &&
-          item.play.some((b: any) => selectedPlay.value.includes(b.id)))
-    )
-    .filter(
-      (item: any) =>
         !selectedTags.value.length ||
         (item.tags &&
           item.tags.some((b: any) => selectedTags.value.includes(b.id)))
+    )
+    .filter(
+      (item: any) =>
+        !selectedPlay.value.length ||
+        (item.play &&
+          item.play.some((b: any) => selectedPlay.value.includes(b.id)))
     )
     .filter(
       (item: any) =>
@@ -150,12 +185,13 @@ const showBookInfo = (info: any) => {
         root: {
           class: mobileDialog.value
             ? "p-dialog-maximized fixed top-0 left-0 overflow-y-auto"
-            : "w-7/12",
+            : "w-8/12",
         },
       },
     },
   })
 }
+
 useHead({
   title: "mirukushake's BL collection",
 })
@@ -164,7 +200,7 @@ useHead({
 <template>
   <div
     class="flex items-center justify-center min-h-screen p-5 min-w-screen"
-    v-if="loading"
+    v-if="loading === true"
   >
     <div class="flex space-x-2 animate-pulse">
       <div class="w-3 h-3 bg-gray-500 rounded-full"></div>
@@ -172,7 +208,6 @@ useHead({
       <div class="w-3 h-3 bg-gray-500 rounded-full"></div>
     </div>
   </div>
-
   <FilterBar v-if="loading === false && filteredBooks" :count="count" />
   <DataView
     lazy
@@ -191,7 +226,7 @@ useHead({
       <div
         class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-4 auto-rows-fr"
       >
-        <div v-for="item in slotProps.items" :key="item.id" class="">
+        <div v-for="(item, index) in slotProps.items" :key="index" class="">
           <Card
             class="h-full hover:shadow-md cursor-pointer"
             @click="showBookInfo(item)"

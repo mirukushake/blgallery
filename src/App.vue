@@ -109,7 +109,9 @@ const menuitems = ref([
       </Menubar>
     </header>
     <div id="maincontent" class="mx-auto p-10">
-      <RouterView />
+      <router-view v-slot="{ Component, route }">
+        <component :is="Component" :key="route.path" />
+      </router-view>
     </div>
   </div>
 </template>
