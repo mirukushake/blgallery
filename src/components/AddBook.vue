@@ -277,15 +277,6 @@ const getJSON = async () => {
       })
       .filter((item: any) => item !== undefined)
 
-    const newTags = data.value.data.tags
-      .map((x: any) => {
-        let item = metadata.value?.tags.find((item) => item.ja === x)
-        if (item) {
-          return item.id
-        }
-      })
-      .filter((item: any) => item !== undefined)
-
     bookForm.value.title = data.value.data.title
     bookForm.value.published = data.value.data.published
     bookForm.value.label_id = label ? label.id : null
@@ -297,7 +288,6 @@ const getJSON = async () => {
     selectedSeme.value = newSeme
     selectedUke.value = newUke
     selectedSettei.value = newSettei
-    selectedTags.value = newTags
   }
 }
 
