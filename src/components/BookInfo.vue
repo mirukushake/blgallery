@@ -131,13 +131,13 @@ async function submitBook() {
     editValues.authors = map
   }
 
-  editValues.read = editValues.read
-    ? dayjs(editValues.read).format("YYYY-MM-DD")
-    : null
+  if (editValues.read) {
+    editValues.read = dayjs(editValues.read).format("YYYY-MM-DD")
+  }
 
-  editValues.published = editValues.published
-    ? dayjs(editValues.published).format("YYYY-MM-DD")
-    : null
+  if (editValues.published) {
+    editValues.published = dayjs(editValues.published).format("YYYY-MM-DD")
+  }
 
   try {
     const { data, isFetching, statusCode } = await apiFetch(
