@@ -235,7 +235,7 @@ useHead({
               ><span v-if="item.cover"
                 ><img
                   :alt="`${item.title.ja} cover`"
-                  v-lazy="item.cover"
+                  v-lazy="`${item.cover.replace(/\.[^/.]+$/, '')}_thumb.jpeg`"
                   class="object-cover object-right-top h-56 w-full rounded-t-md"
               /></span>
               <span v-else
