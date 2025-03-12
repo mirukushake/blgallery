@@ -38,14 +38,6 @@ const routes: Array<RouteRecordRaw> = [
     name: "addbook",
     component: () => import("./components/AddBook.vue"),
   },
-  {
-    path: "/stats",
-    name: "stats",
-    component: () => import("./components/Stats.vue"),
-    meta: {
-      needsAuth: true,
-    },
-  },
 ]
 
 const router = createRouter({

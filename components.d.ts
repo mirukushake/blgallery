@@ -8,7 +8,6 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AddBook: typeof import('./src/components/AddBook.vue')['default']
-    AllBooks: typeof import('./src/components/AllBooks.vue')['default']
     BaseList: typeof import('./src/components/BaseList.vue')['default']
     BookInfo: typeof import('./src/components/BookInfo.vue')['default']
     Button: typeof import('primevue/button')['default']
@@ -18,7 +17,6 @@ declare module 'vue' {
     DatePicker: typeof import('primevue/datepicker')['default']
     Dialog: typeof import('primevue/dialog')['default']
     DynamicDialog: typeof import('primevue/dynamicdialog')['default']
-    Fieldset: typeof import('primevue/fieldset')['default']
     FilterBar: typeof import('./src/components/FilterBar.vue')['default']
     FloatLabel: typeof import('primevue/floatlabel')['default']
     IconField: typeof import('primevue/iconfield')['default']
@@ -26,10 +24,8 @@ declare module 'vue' {
     InputIcon: typeof import('primevue/inputicon')['default']
     InputNumber: typeof import('primevue/inputnumber')['default']
     InputText: typeof import('primevue/inputtext')['default']
-    Manga: typeof import('./src/components/Manga.vue')['default']
     Menubar: typeof import('primevue/menubar')['default']
     MultiSelect: typeof import('primevue/multiselect')['default']
-    Novels: typeof import('./src/components/Novels.vue')['default']
     Panel: typeof import('primevue/panel')['default']
     Password: typeof import('primevue/password')['default']
     Popover: typeof import('primevue/popover')['default']

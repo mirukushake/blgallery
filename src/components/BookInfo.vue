@@ -8,13 +8,16 @@ import isEqual from "lodash/isEqual"
 import { Dialog, Series, MetadataAuthors } from "../models/models"
 import { useI18n } from "vue-i18n"
 import { storeToRefs } from "pinia"
-import { bookListStore, userSessionStore } from "../store"
+import { bookListStore, userSessionStore, filterStore } from "../store"
 import { useToast } from "primevue/usetoast"
 import dayjs from "dayjs"
 import customParseFormat from "dayjs/plugin/customParseFormat"
+import type { DynamicDialogInstance } from "primevue/dynamicdialogoptions"
 const store = bookListStore()
+const search = filterStore()
 const { apiFetch } = store
 const { records, metadata } = storeToRefs(store)
+const { keyword } = storeToRefs(search)
 const userSession = userSessionStore()
 const toast = useToast()
 
@@ -27,7 +30,7 @@ interface LocaleName {
   en: string
 }
 
-const dialogRef = inject<Ref<Dialog>>("dialogRef")
+const dialogRef = inject<Ref<DynamicDialogInstance>>("dialogRef")
 const record = ref()
 const loading = ref(false)
 const editMode = ref(false)
@@ -83,6 +86,11 @@ function goToLink(url: string) {
   if (url) {
     window.open(url, "_blank")
   }
+}
+
+function searchAuthor(name: string) {
+  keyword.value = name
+  dialogRef?.value.close()
 }
 
 function enterEdit() {
@@ -275,6 +283,8 @@ const showAlert = () => {
             v-if="record.authors"
             v-for="(author, index) in record.authors?.sort((a: any, b: any) => a.order - b.order)"
             :class="{ 'ml-2': index > 0 }"
+            class="cursor-pointer text-blue-500 hover:underline"
+            @click="searchAuthor(author.name)"
             >{{ author.name }}</span
           >
         </dd>
