@@ -1,6 +1,7 @@
 import { createApp } from "vue"
 import { createPinia } from "pinia"
 import { createHead } from "@unhead/vue"
+import ui from "@nuxt/ui/vue-plugin"
 import i18n from "./plugins/i18n"
 import "./style.scss"
 import App from "./App.vue"
@@ -38,6 +39,7 @@ const MyPreset = definePreset(Aura, {
 })
 
 app.use(pinia)
+app.use(ui)
 app.use(head)
 app.use(i18n)
 app.use(PrimeVue, {

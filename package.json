@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@nuxt/ui": "^4.7.1",
     "@primevue/themes": "^4.0.4",
     "@supabase/supabase-js": "^2.45.3",
     "@unhead/vue": "^1.10.0",

@@ -47,63 +47,65 @@ const menuitems = ref([
 </script>
 
 <template>
-  <div class="m-0 p-0 rounded-none">
-    <header id="menubar" class="sticky top-0 z-50">
-      <Menubar :model="menuitems" class="!rounded-none">
-        <template #item="{ item, props, hasSubmenu }">
-          <router-link
-            v-if="item.route"
-            v-slot="{ href, navigate, isActive }"
-            :to="item.route"
-            custom
-          >
+  <UApp>
+    <div class="m-0 p-0 rounded-none">
+      <header id="menubar" class="sticky top-0 z-50">
+        <Menubar :model="menuitems" class="!rounded-none">
+          <template #item="{ item, props, hasSubmenu }">
+            <router-link
+              v-if="item.route"
+              v-slot="{ href, navigate, isActive }"
+              :to="item.route"
+              custom
+            >
+              <a
+                v-ripple
+                :href="href"
+                v-bind="props.action"
+                @click="navigate"
+                :class="isActive ? 'rounded-md bg-blue-200' : 'transparent'"
+              >
+                <span :class="item.icon" />
+                <span class="ml-2">{{ item.label }}</span>
+              </a>
+            </router-link>
             <a
+              v-else
               v-ripple
-              :href="href"
+              :href="item.url"
+              :target="item.target"
               v-bind="props.action"
-              @click="navigate"
-              :class="isActive ? 'rounded-md bg-blue-200' : 'transparent'"
             >
               <span :class="item.icon" />
               <span class="ml-2">{{ item.label }}</span>
+              <span v-if="hasSubmenu" class="pi pi-fw pi-angle-down ml-2" />
             </a>
-          </router-link>
-          <a
-            v-else
-            v-ripple
-            :href="item.url"
-            :target="item.target"
-            v-bind="props.action"
-          >
-            <span :class="item.icon" />
-            <span class="ml-2">{{ item.label }}</span>
-            <span v-if="hasSubmenu" class="pi pi-fw pi-angle-down ml-2" />
-          </a>
-        </template>
-        <template #end>
-          <div class="flex">
-            <Button
-              :label="locale === 'en' ? '🇯🇵' : '🇺🇸'"
-              rounded
-              outlined
-              @click="changeLocale()"
-            />
-            <Button
-              v-if="userSession.session"
-              icon="pi pi-plus"
-              rounded
-              outlined
-              @click="() => router.push({ path: '/addbook' })"
-              class="ml-2"
-            />
-          </div>
-        </template>
-      </Menubar>
-    </header>
-    <div id="maincontent" class="mx-auto p-10">
-      <router-view v-slot="{ Component, route }">
-        <component :is="Component" :key="route.path" />
-      </router-view>
+          </template>
+          <template #end>
+            <div class="flex">
+              <Button
+                :label="locale === 'en' ? '🇯🇵' : '🇺🇸'"
+                rounded
+                outlined
+                @click="changeLocale()"
+              />
+              <Button
+                v-if="userSession.session"
+                icon="pi pi-plus"
+                rounded
+                outlined
+                @click="() => router.push({ path: '/addbook' })"
+                class="ml-2"
+              />
+            </div>
+          </template>
+        </Menubar>
+      </header>
+      <div id="maincontent" class="mx-auto p-10">
+        <router-view v-slot="{ Component, route }">
+          <component :is="Component" :key="route.path" />
+        </router-view>
+      </div>
     </div>
-  </div>
+  </UApp>
 </template>
