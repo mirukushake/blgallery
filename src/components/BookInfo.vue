@@ -702,7 +702,7 @@ const showAlert = () => {
                   placeholder="Read"
                   class="w-36"
                 /> -->
-                <DatePicker
+                <!-- <DatePicker
                   v-model="editRecordUpdated.read"
                   dateFormat="yy/mm/dd"
                   showButtonBar
@@ -827,4 +827,4 @@ const showAlert = () => {
       @click="editMode = false"
     />
   </div>
-</template>
+</template> -->
