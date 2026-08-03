@@ -33,7 +33,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/setup@v1
         with:
-          version: 11
+          version: 10
           runtime: node@24
           cache: true
       - name: Build
