@@ -27,20 +27,18 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [24]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
-      - name: Set up Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
+        uses: actions/checkout@v6
       - name: Install pnpm
-        uses: pnpm/action-setup@v3
+        uses: pnpm/setup@v1
         with:
-          version: 9.7.1
-          run_install: false
-      - name: Install dependencies
-        run: pnpm install
+          version: 11
+          runtime: node@24
+          cache: true
       - name: Build
         run: pnpm run build
         env:
