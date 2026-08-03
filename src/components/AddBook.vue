@@ -1,85 +1,86 @@
 <script setup lang="ts">
-import { bookListStore } from "../store"
-import { storeToRefs } from "pinia"
-import { ref, computed } from "vue"
-import dayjs from "dayjs"
-import customParseFormat from "dayjs/plugin/customParseFormat"
+import { bookListStore } from "../store";
+import { storeToRefs } from "pinia";
+import { ref, computed } from "vue";
+import dayjs from "dayjs";
+import customParseFormat from "dayjs/plugin/customParseFormat";
 // import router from "../router"
-import { useFetch } from "@vueuse/core"
-import { Series, MetadataAuthors } from "../models/models"
-import { useToast } from "primevue/usetoast"
-const store = bookListStore()
-const { metadata } = storeToRefs(store)
-const { apiFetch } = store
-const toast = useToast()
+import { useFetch } from "@vueuse/core";
+import { Series, MetadataAuthors } from "../models/models";
+import { useToast } from "primevue/usetoast";
+const store = bookListStore();
+const { metadata } = storeToRefs(store);
+const { apiFetch } = store;
+const toast = useToast();
 
-dayjs.extend(customParseFormat)
-const loading = ref(false)
+dayjs.extend(customParseFormat);
+const loading = ref(false);
 
 interface Book {
-  title: string | null
-  manga: boolean
-  location_id: number | null
-  label_id: number | null
-  status_id: number
-  series_id: number | null
-  series_no: number | null
-  published: Date | null
-  read: Date | null
-  rating: number | null
-  notes: string | null
-  cover: string | null
-  chil_url: string | null
+	title: string | null;
+	manga: boolean;
+	location_id: number | null;
+	label_id: number | null;
+	status_id: number;
+	series_id: number | null;
+	series_no: number | null;
+	published: Date | null;
+	read: Date | null;
+	rating: number | null;
+	notes: string | null;
+	cover: string | null;
+	chil_url: string | null;
 }
 
 const bookForm = ref<Book>({
-  title: null,
-  manga: true,
-  location_id: null,
-  label_id: null,
-  status_id: 1,
-  series_id: null,
-  series_no: null,
-  published: null,
-  read: null,
-  rating: null,
-  notes: null,
-  cover: null,
-  chil_url: null,
-})
-const selectedAuthors = ref<number[]>([])
-const selectedSettei = ref<number[]>([])
-const selectedTone = ref<number[]>([])
-const selectedSeme = ref<number[]>([])
-const selectedUke = ref<number[]>([])
-const selectedPlay = ref<number[]>([])
-const selectedTags = ref<number[]>([])
-const imgPreview = ref<string>()
-const fetchUrl = ref<string>("")
-const missingAuth = ref([])
-const missingSeries = ref("")
-const missingSettei = ref([])
+	title: null,
+	manga: true,
+	location_id: null,
+	label_id: null,
+	status_id: 1,
+	series_id: null,
+	series_no: null,
+	published: null,
+	read: null,
+	rating: null,
+	notes: null,
+	cover: null,
+	chil_url: null,
+});
+const selectedAuthors = ref<number[]>([]);
+const selectedSettei = ref<number[]>([]);
+const selectedTone = ref<number[]>([]);
+const selectedSeme = ref<number[]>([]);
+const selectedUke = ref<number[]>([]);
+const selectedPlay = ref<number[]>([]);
+const selectedTags = ref<number[]>([]);
+const imgPreview = ref<string>();
+const fetchUrl = ref<string>("");
+const missingAuth = ref([]);
+const missingSeries = ref("");
+const missingSettei = ref([]);
+const jsonImport = ref<string>();
 
-const seriesVisible = ref(false)
-const authorVisible = ref(false)
+const seriesVisible = ref(false);
+const authorVisible = ref(false);
 
 const authArray = computed(() => {
-  const map = selectedAuthors.value.map((x, index) => ({
-    author_id: x,
-    order: index + 1,
-  }))
-  return map
-})
+	const map = selectedAuthors.value.map((x, index) => ({
+		author_id: x,
+		order: index + 1,
+	}));
+	return map;
+});
 
 const newAuthor = ref({
-  name: null,
-  reading: null,
-  illustrator: false,
-})
+	name: null,
+	reading: null,
+	illustrator: false,
+});
 const newSeries = ref({
-  ja: null,
-  complete: false,
-})
+	ja: null,
+	complete: false,
+});
 
 // async function getImage(url: string) {
 //   try {
@@ -90,235 +91,331 @@ const newSeries = ref({
 //   }
 // }
 
+function jsonParse() {
+	const json = JSON.parse(jsonImport.value as string);
+	const label = metadata.value?.labels.find((x: any) => x.ja === json.label);
+	const series = metadata.value?.series.find((x: any) => x.ja === json.series);
+
+	missingAuth.value = json.authors.filter(
+		(x: any) => !metadata.value?.authors.some((b) => b.name === x),
+	)
+		? json.authors.filter(
+				(x: any) => !metadata.value?.authors.some((b) => b.name === x),
+			)
+		: [];
+
+	missingSettei.value = json.settei.filter(
+		(x: any) => !metadata.value?.settei.some((b) => b.ja === x),
+	)
+		? json.settei.filter(
+				(x: any) => !metadata.value?.settei.some((b) => b.ja === x),
+			)
+		: [];
+
+	missingSeries.value = metadata.value?.series.find(
+		(x: any) => x.ja === json.series,
+	)
+		? ""
+		: json.series;
+
+	const newAuth = json.authors
+		.map((x: any) => {
+			let item = metadata.value?.authors.find((item) => item.name === x);
+			if (item) {
+				return item.id;
+			}
+		})
+		.filter((item: any) => item !== undefined);
+
+	const newTone = json.tone
+		.map((x: any) => {
+			let item = metadata.value?.tone.find((item) => item.ja === x);
+			if (item) {
+				return item.id;
+			}
+		})
+		.filter((item: any) => item !== undefined);
+
+	const newSeme = json.seme
+		.map((x: any) => {
+			let item = metadata.value?.seme.find((item) => item.ja === x);
+			if (item) {
+				return item.id;
+			}
+		})
+		.filter((item: any) => item !== undefined);
+
+	const newUke = json.uke
+		.map((x: any) => {
+			let item = metadata.value?.uke.find((item) => item.ja === x);
+			if (item) {
+				return item.id;
+			}
+		})
+		.filter((item: any) => item !== undefined);
+
+	const newSettei = json.settei
+		.map((x: any) => {
+			let item = metadata.value?.settei.find((item) => item.ja === x);
+			if (item) {
+				return item.id;
+			}
+		})
+		.filter((item: any) => item !== undefined);
+
+	const newPlay = json.play
+		.map((x: any) => {
+			let item = metadata.value?.play.find((item) => item.ja === x);
+			if (item) {
+				return item.id;
+			}
+		})
+		.filter((item: any) => item !== undefined);
+
+	bookForm.value.title = json.title;
+	bookForm.value.published = json.release;
+	bookForm.value.label_id = label ? label.id : null;
+	bookForm.value.series_id = series ? series.id : null;
+	bookForm.value.manga = JSON.parse(json.manga);
+	selectedAuthors.value = newAuth;
+	selectedTone.value = newTone;
+	selectedSeme.value = newSeme;
+	selectedUke.value = newUke;
+	selectedSettei.value = newSettei;
+	selectedPlay.value = newPlay;
+
+	console.log(json);
+}
+
 function goToAmazon() {
-  window.open(
-    `https://www.amazon.co.jp/s?k=${bookForm.value.title}&__mk_ja_JP=%E3%82%AB%E3%82%BF%E3%82%AB%E3%83%8A&crid=21O74T07MTUGT&sprefix=9784199011436%2Caps%2C363&ref=nb_sb_noss`,
-    "_blank"
-  )
+	window.open(
+		`https://www.amazon.co.jp/s?k=${bookForm.value.title}&__mk_ja_JP=%E3%82%AB%E3%82%BF%E3%82%AB%E3%83%8A&crid=21O74T07MTUGT&sprefix=9784199011436%2Caps%2C363&ref=nb_sb_noss`,
+		"_blank",
+	);
 }
 
 const showAlert = () => {
-  toast.add({
-    severity: "success",
-    summary: "Info",
-    detail: "Book added successfully",
-    life: 3000,
-  })
-}
+	toast.add({
+		severity: "success",
+		summary: "Info",
+		detail: "Book added successfully",
+		life: 3000,
+	});
+};
 
 async function submitSeries() {
-  try {
-    const { data, isFetching, statusCode } = await apiFetch<Series>("/series", {
-      method: "POST",
-      body: JSON.stringify(newSeries.value),
-    }).json()
+	try {
+		const { data, isFetching, statusCode } = await apiFetch<Series>("/series", {
+			method: "POST",
+			body: JSON.stringify(newSeries.value),
+		}).json();
 
-    console.log(data.value.data)
+		console.log(data.value.data);
 
-    loading.value = isFetching.value
-    if (statusCode.value === 201 && data) {
-      metadata.value!.series.push(data.value.data as Series)
-      bookForm.value.series_id = data.value?.data.id as number
-    }
-  } catch (error) {
-    console.log(error)
-  } finally {
-    newSeries.value.complete = false
-    newSeries.value.ja = null
-    seriesVisible.value = false
-  }
+		loading.value = isFetching.value;
+		if (statusCode.value === 201 && data) {
+			metadata.value!.series.push(data.value.data as Series);
+			bookForm.value.series_id = data.value?.data.id as number;
+		}
+	} catch (error) {
+		console.log(error);
+	} finally {
+		newSeries.value.complete = false;
+		newSeries.value.ja = null;
+		seriesVisible.value = false;
+	}
 }
 
 async function submitAuthor() {
-  try {
-    const { data, isFetching, statusCode } = await apiFetch<MetadataAuthors>(
-      "/authors",
-      {
-        method: "POST",
-        body: JSON.stringify(newAuthor.value),
-      }
-    ).json()
+	try {
+		const { data, isFetching, statusCode } = await apiFetch<MetadataAuthors>(
+			"/authors",
+			{
+				method: "POST",
+				body: JSON.stringify(newAuthor.value),
+			},
+		).json();
 
-    console.log(data.value.data)
+		console.log(data.value.data);
 
-    loading.value = isFetching.value
-    if (statusCode.value === 201 && data) {
-      metadata.value!.authors.push(data.value.data as MetadataAuthors)
-      selectedAuthors.value.push(data.value.data.id)
-    }
-  } catch (error) {
-    console.log(error)
-  } finally {
-    authorVisible.value = false
-    newAuthor.value.name = null
-    newAuthor.value.reading = null
-    newAuthor.value.illustrator = false
-  }
+		loading.value = isFetching.value;
+		if (statusCode.value === 201 && data) {
+			metadata.value!.authors.push(data.value.data as MetadataAuthors);
+			selectedAuthors.value.push(data.value.data.id);
+		}
+	} catch (error) {
+		console.log(error);
+	} finally {
+		authorVisible.value = false;
+		newAuthor.value.name = null;
+		newAuthor.value.reading = null;
+		newAuthor.value.illustrator = false;
+	}
 }
 
 async function submitBook() {
-  loading.value = true
-  const bodyData = {
-    ...bookForm.value,
-    read: bookForm.value.read
-      ? dayjs(bookForm.value.read).format("YYYY-MM-DD")
-      : null,
-    published: bookForm.value.published
-      ? dayjs(bookForm.value.published).format("YYYY-MM-DD")
-      : null,
-    authArray: authArray.value,
-    selectedTone: [...new Set(selectedTone.value)],
-    selectedSeme: [...new Set(selectedSeme.value)],
-    selectedUke: [...new Set(selectedUke.value)],
-    selectedSettei: [...new Set(selectedSettei.value)],
-    selectedPlay: [...new Set(selectedPlay.value)],
-    selectedTags: [...new Set(selectedTags.value)],
-  }
+	loading.value = true;
+	const bodyData = {
+		...bookForm.value,
+		read: bookForm.value.read
+			? dayjs(bookForm.value.read).format("YYYY-MM-DD")
+			: null,
+		published: bookForm.value.published
+			? dayjs(bookForm.value.published).format("YYYY-MM-DD")
+			: null,
+		authArray: authArray.value,
+		selectedTone: [...new Set(selectedTone.value)],
+		selectedSeme: [...new Set(selectedSeme.value)],
+		selectedUke: [...new Set(selectedUke.value)],
+		selectedSettei: [...new Set(selectedSettei.value)],
+		selectedPlay: [...new Set(selectedPlay.value)],
+		selectedTags: [...new Set(selectedTags.value)],
+	};
 
-  try {
-    const { isFetching, statusCode } = await apiFetch("/books", {
-      method: "POST",
-      body: JSON.stringify(bodyData),
-    }).json()
-    loading.value = isFetching.value
-    if (statusCode.value === 201) {
-    }
-  } catch (error) {
-    console.log(error)
-  } finally {
-    await store.getBooks()
-    clearForm()
-    showAlert()
+	try {
+		const { isFetching, statusCode } = await apiFetch("/books", {
+			method: "POST",
+			body: JSON.stringify(bodyData),
+		}).json();
+		loading.value = isFetching.value;
+		if (statusCode.value === 201) {
+		}
+	} catch (error) {
+		console.log(error);
+	} finally {
+		await store.getBooks();
+		clearForm();
+		showAlert();
 
-    loading.value = false
-  }
+		loading.value = false;
+	}
 }
 
 const getJSON = async () => {
-  const { data, isFetching, statusCode } = await apiFetch(
-    `/datafetch?url=${fetchUrl.value}`,
-    {
-      method: "GET",
-    }
-  ).json()
+	const { data, isFetching, statusCode } = await apiFetch(
+		`/datafetch?url=${fetchUrl.value}`,
+		{
+			method: "GET",
+		},
+	).json();
 
-  if (data.value.data) {
-    const label = metadata.value?.labels.find(
-      (x: any) => x.ja === data.value.data.label
-    )
-    const series = metadata.value?.series.find(
-      (x: any) => x.ja === data.value.data.series
-    )
+	if (data.value.data) {
+		const label = metadata.value?.labels.find(
+			(x: any) => x.ja === data.value.data.label,
+		);
+		const series = metadata.value?.series.find(
+			(x: any) => x.ja === data.value.data.series,
+		);
 
-    missingAuth.value = data.value.data.authors.filter(
-      (x: any) => !metadata.value?.authors.some((b) => b.name === x)
-    )
-      ? data.value.data.authors.filter(
-          (x: any) => !metadata.value?.authors.some((b) => b.name === x)
-        )
-      : []
+		missingAuth.value = data.value.data.authors.filter(
+			(x: any) => !metadata.value?.authors.some((b) => b.name === x),
+		)
+			? data.value.data.authors.filter(
+					(x: any) => !metadata.value?.authors.some((b) => b.name === x),
+				)
+			: [];
 
-    missingSettei.value = data.value.data.settei.filter(
-      (x: any) => !metadata.value?.settei.some((b) => b.ja === x)
-    )
-      ? data.value.data.settei.filter(
-          (x: any) => !metadata.value?.settei.some((b) => b.ja === x)
-        )
-      : []
+		missingSettei.value = data.value.data.settei.filter(
+			(x: any) => !metadata.value?.settei.some((b) => b.ja === x),
+		)
+			? data.value.data.settei.filter(
+					(x: any) => !metadata.value?.settei.some((b) => b.ja === x),
+				)
+			: [];
 
-    missingSeries.value = metadata.value?.series.find(
-      (x: any) => x.ja === data.value.data.series
-    )
-      ? ""
-      : data.value.data.series
+		missingSeries.value = metadata.value?.series.find(
+			(x: any) => x.ja === data.value.data.series,
+		)
+			? ""
+			: data.value.data.series;
 
-    const newAuth = data.value.data.authors
-      .map((x: any) => {
-        let item = metadata.value?.authors.find((item) => item.name === x)
-        if (item) {
-          return item.id
-        }
-      })
-      .filter((item: any) => item !== undefined)
+		const newAuth = data.value.data.authors
+			.map((x: any) => {
+				let item = metadata.value?.authors.find((item) => item.name === x);
+				if (item) {
+					return item.id;
+				}
+			})
+			.filter((item: any) => item !== undefined);
 
-    const newTone = data.value.data.tone
-      .map((x: any) => {
-        let item = metadata.value?.tone.find((item) => item.ja === x)
-        if (item) {
-          return item.id
-        }
-      })
-      .filter((item: any) => item !== undefined)
+		const newTone = data.value.data.tone
+			.map((x: any) => {
+				let item = metadata.value?.tone.find((item) => item.ja === x);
+				if (item) {
+					return item.id;
+				}
+			})
+			.filter((item: any) => item !== undefined);
 
-    const newSeme = data.value.data.seme
-      .map((x: any) => {
-        let item = metadata.value?.seme.find((item) => item.ja === x)
-        if (item) {
-          return item.id
-        }
-      })
-      .filter((item: any) => item !== undefined)
+		const newSeme = data.value.data.seme
+			.map((x: any) => {
+				let item = metadata.value?.seme.find((item) => item.ja === x);
+				if (item) {
+					return item.id;
+				}
+			})
+			.filter((item: any) => item !== undefined);
 
-    const newUke = data.value.data.uke
-      .map((x: any) => {
-        let item = metadata.value?.uke.find((item) => item.ja === x)
-        if (item) {
-          return item.id
-        }
-      })
-      .filter((item: any) => item !== undefined)
+		const newUke = data.value.data.uke
+			.map((x: any) => {
+				let item = metadata.value?.uke.find((item) => item.ja === x);
+				if (item) {
+					return item.id;
+				}
+			})
+			.filter((item: any) => item !== undefined);
 
-    const newSettei = data.value.data.settei
-      .map((x: any) => {
-        let item = metadata.value?.settei.find((item) => item.ja === x)
-        if (item) {
-          return item.id
-        }
-      })
-      .filter((item: any) => item !== undefined)
+		const newSettei = data.value.data.settei
+			.map((x: any) => {
+				let item = metadata.value?.settei.find((item) => item.ja === x);
+				if (item) {
+					return item.id;
+				}
+			})
+			.filter((item: any) => item !== undefined);
 
-    bookForm.value.title = data.value.data.title
-    bookForm.value.published = data.value.data.published
-    bookForm.value.label_id = label ? label.id : null
-    bookForm.value.series_id = series ? series.id : null
-    bookForm.value.manga = data.value.data.manga
-    bookForm.value.chil_url = fetchUrl.value
-    selectedAuthors.value = newAuth
-    selectedTone.value = newTone
-    selectedSeme.value = newSeme
-    selectedUke.value = newUke
-    selectedSettei.value = newSettei
-  }
-}
+		bookForm.value.title = data.value.data.title;
+		bookForm.value.published = data.value.data.published;
+		bookForm.value.label_id = label ? label.id : null;
+		bookForm.value.series_id = series ? series.id : null;
+		bookForm.value.manga = data.value.data.manga;
+		bookForm.value.chil_url = fetchUrl.value;
+		selectedAuthors.value = newAuth;
+		selectedTone.value = newTone;
+		selectedSeme.value = newSeme;
+		selectedUke.value = newUke;
+		selectedSettei.value = newSettei;
+	}
+};
 
 function clearForm() {
-  bookForm.value = {
-    title: null,
-    manga: true,
-    location_id: null,
-    label_id: null,
-    status_id: 1,
-    series_id: null,
-    series_no: null,
-    published: null,
-    read: null,
-    rating: null,
-    notes: null,
-    cover: null,
-    chil_url: null,
-  }
+	bookForm.value = {
+		title: null,
+		manga: true,
+		location_id: null,
+		label_id: null,
+		status_id: 1,
+		series_id: null,
+		series_no: null,
+		published: null,
+		read: null,
+		rating: null,
+		notes: null,
+		cover: null,
+		chil_url: null,
+	};
 
-  selectedAuthors.value = []
-  selectedPlay.value = []
-  selectedSeme.value = []
-  selectedSettei.value = []
-  selectedTags.value = []
-  selectedTone.value = []
-  selectedUke.value = []
+	selectedAuthors.value = [];
+	selectedPlay.value = [];
+	selectedSeme.value = [];
+	selectedSettei.value = [];
+	selectedTags.value = [];
+	selectedTone.value = [];
+	selectedUke.value = [];
 
-  missingAuth.value = []
-  missingSeries.value = ""
-  missingSettei.value = []
+	missingAuth.value = [];
+	missingSeries.value = "";
+	missingSettei.value = [];
 }
 </script>
 
@@ -331,23 +428,21 @@ function clearForm() {
     <TabPanels>
       <TabPanel value="addbook">
         <div v-if="metadata" id="newbookform">
-          <div class="mb-8">
-            <div>Add via URL</div>
-            <InputText id="fetchUrl" v-model="fetchUrl" class="w-4/12" />
-            <Button
-              class="ml-2"
+          <div class="mt-4">Add via json </div>
+          <Textarea v-model="jsonImport" rows="2" cols="30" />
+          <Button
+              class="ml-2 mb-8"
               type="button"
-              label="Get data"
-              @click="getJSON"
+              label="Parse data"
+              @click="jsonParse"
             ></Button>
-            <Button
-              class="ml-2"
+                        <Button
+              class="ml-2 mb-8"
               type="button"
               label="Clear"
               severity="danger"
               @click="clearForm"
             ></Button>
-          </div>
           <div>Title</div>
           <InputText id="title" v-model="bookForm.title" class="w-4/12" />
           <div class="mt-4">Cover</div>
@@ -383,7 +478,7 @@ function clearForm() {
             class="ml-4"
           />
           <div v-if="missingAuth">
-            <span v-for="auth in missingAuth">{{ auth }}</span>
+            <span v-for="auth in missingAuth" class="ml-2">{{ auth }}</span>
           </div>
           <div class="mt-4">Series</div>
           <Select
@@ -527,7 +622,7 @@ function clearForm() {
             class="w-6/12 mb-4"
           />
           <div v-if="missingSettei">
-            <span v-for="settei in missingSettei" class="pr-2">{{
+            <span v-for="settei in missingSettei" class="mr-2">{{
               settei
             }}</span>
           </div>
