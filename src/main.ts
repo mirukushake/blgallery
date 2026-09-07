@@ -1,6 +1,6 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
-import { createHead } from '@unhead/vue'
+import { createHead } from '@unhead/vue/client'
 import ui from '@nuxt/ui/vue-plugin'
 import i18n from './plugins/i18n'
 import './assets/main.css'

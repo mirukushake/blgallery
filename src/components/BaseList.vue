@@ -17,6 +17,7 @@ import {
 	LocaleName,
 } from '../models/models'
 import BookTest from './BookTest.vue'
+import FilterBar from './FilterBar.vue'
 import { bookListStore, filterStore } from '../store'
 import { storeToRefs } from 'pinia'
 import { useHead } from '@unhead/vue'
@@ -145,6 +146,8 @@ const filteredBooks = computed(() => {
 		})
 })
 
+const count = filteredBooks.value.length
+
 const statusColor = (status: number) => {
 	switch (status) {
 		case 2:
@@ -160,7 +163,14 @@ const statusColor = (status: number) => {
 	}
 }
 
+const container = useTemplateRef('container')
 const scrollArea = useTemplateRef('scrollArea')
+const getScrollElement = () => container.value
+
+const filter = useTemplateRef('filterBar')
+const { height } = useElementSize(() => filter.value?.$el)
+const scrollMargin = height
+
 const { width } = useElementSize(() => scrollArea.value?.$el)
 const lanes = computed(() =>
 	Math.max(1, Math.min(4, Math.floor(width.value / 300))),
@@ -182,88 +192,101 @@ useHead({
 </script>
 
 <template>
-	<UScrollArea
-		ref="scrollArea"
-		v-slot="{ item, index }"
-		:items="filteredBooks"
-		:virtualize="{
+	<div ref="container">
+		<FilterBar
+			ref="filterBar"
+			v-if="loading === false && filteredBooks"
+			:count="count"
+			class="m-4" />
+		<UScrollArea
+			ref="scrollArea"
+			v-slot="{ item, index }"
+			:items="filteredBooks"
+			:virtualize="{
       lanes: lanes,
       gap: 16,
+			getScrollElement,
     }"
-		class="w-full h-full p-4">
-		<UCard
-			:ui="{
+			class="p-4">
+			<UCard
+				:ui="{
         body: 'p-0 sm:p-0 flex flex-row items-center',
       }"
-			class="hover:drop-shadow-md"
-			@click="showBookInfo(item)">
-			<div class="flex-none w-24">
-				<span v-if="item.cover"
-					><img
-						:alt="`${item.title} cover`"
-						v-lazy="`${item.cover.replace(/\.[^/.]+$/, '')}_thumb.jpeg`"
-						class="w-full object-cover object-top-right rounded-l-lg h-32"></span
-				>
-				<span v-else
-					><div
-						class="object-cover object-center h-32 w-full flex justify-center items-center">
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							width="24"
-							height="24"
-							viewBox="0 0 24 24"
-							class="size-16 text-neutral-200">
-							<g
-								fill="none"
-								stroke="currentColor"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2">
-								<rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
-								<circle cx="9" cy="9" r="2" />
-								<path d="m21 15l-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
-							</g>
-						</svg>
-					</div></span
-				>
-			</div>
-			<div class="p-2 flex-auto">
-				<div class="flex items-center">
-					<UBadge
-						size="sm"
-						variant="outline"
-						class="mr-2"
-						:color="item.manga === false ? 'secondary' : 'info'"
-						>{{ item.manga === false ? t("novel") : t("manga") }}</UBadge
+				class="hover:drop-shadow-md"
+				@click="showBookInfo(item)">
+				<div class="flex-none w-24">
+					<span v-if="item.cover"
+						><img
+							:alt="`${item.title} cover`"
+							v-lazy="`${item.cover.replace(/\.[^/.]+$/, '')}_thumb.jpeg`"
+							class="w-full object-cover object-top-right rounded-l-lg h-32"></span
 					>
-					<UBadge
-						size="sm"
-						variant="outline"
-						:color="statusColor(item.status_id)"
-						>{{ item.status[locale as keyof LocaleName] }}</UBadge
+					<span v-else
+						><div
+							class="object-cover object-center h-32 w-full flex justify-center items-center">
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								width="24"
+								height="24"
+								viewBox="0 0 24 24"
+								class="size-16 text-neutral-200">
+								<g
+									fill="none"
+									stroke="currentColor"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2">
+									<rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+									<circle cx="9" cy="9" r="2" />
+									<path d="m21 15l-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+								</g>
+							</svg>
+						</div></span
 					>
-					<span v-if="item.rating" class="flex items-center text-sm">
-						<UIcon
-							class="ml-2 mr-0.5 size-4 text-yellow-300"
-							name="tabler-star-filled" />{{ item.rating }}
-					</span>
 				</div>
-				<div class="font-bold text-sm mt-2">
-					{{ item.title }}
-				</div>
-				<div class="text-neutral-500 text-xs">
-					<span
-						v-if="item.authors"
-						v-for="(author, index) in item.authors.sort(
-              (a: any, b: any) => a.order - b.order,
+				<div class="p-2 flex-auto">
+					<div class="flex items-center">
+						<UBadge
+							size="sm"
+							variant="outline"
+							class="mr-2"
+							:color="item.manga === false ? 'secondary' : 'info'"
+							>{{
+								item.manga === false ? t("novel") : t("manga")
+							}}</UBadge
+						>
+						<UBadge
+							size="sm"
+							variant="outline"
+							:color="statusColor(item.status_id)"
+							>{{
+								item.status[locale as keyof LocaleName]
+							}}</UBadge
+						>
+						<span v-if="item.rating" class="flex items-center text-sm">
+							<UIcon
+								class="ml-2 mr-0.5 size-4 text-yellow-300"
+								name="tabler-star-filled" />{{ item.rating }}
+						</span>
+					</div>
+					<div class="font-bold text-sm mt-2">
+						{{ item.title }}
+					</div>
+					<div class="text-neutral-500 text-xs" v-if="item.authors">
+						<span
+							v-for="(author, index) in item.authors.sort(
+              (a: Authors, b: Authors) => a.order - b.order,
             )"
-						:class="{ 'ml-2': index > 0 }"
-						>{{ author.name }}</span
-					>
+							:class="{ 'ml-2': index > 0 }"
+							>{{
+								author.name
+							}}</span
+						>
+					</div>
 				</div>
-			</div>
-		</UCard>
-	</UScrollArea>
+			</UCard>
+		</UScrollArea>
+	</div>
 	<!-- <div
     class="flex items-center justify-center min-h-screen p-5 min-w-screen"
     v-if="loading === true"

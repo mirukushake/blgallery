@@ -6,18 +6,18 @@ import { AuthSession } from '@supabase/supabase-js'
 
 const env = import.meta.env.VITE_ENV
 
-export const userSessionStore = defineStore({
-	id: 'userSession',
-	state: () => ({
-		session: null as AuthSession | null,
-	}),
-	persist: {
-		storage: localStorage,
+export const userSessionStore = defineStore(
+	'userSession',
+	() => {
+		const session = ref(null) as unknown as AuthSession | null
+		return { session }
 	},
-})
+	{
+		persist: true,
+	},
+)
 
-export const filterStore = defineStore({
-	id: 'filterStore',
+export const filterStore = defineStore('filterStore', {
 	state: () => ({
 		keyword: '' as string,
 		selectedSettei: [] as number[],
@@ -62,12 +62,9 @@ export const bookListStore = defineStore(
 		async function getBooks() {
 			try {
 				loading.value = true
-				const { data: books, isFetching: booksLoading } = await apiFetch(
-					'/books',
-					{
-						method: 'GET',
-					},
-				).json()
+				const { data: books } = await apiFetch('/books', {
+					method: 'GET',
+				}).json()
 
 				records.value = books.value?.data
 

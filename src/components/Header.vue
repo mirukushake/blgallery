@@ -1,4 +1,6 @@
 <script setup lang="ts">
+/** biome-ignore-all lint/style/useVueMultiWordComponentNames: <explanation> */
+
 import { computed } from 'vue'
 import { userSessionStore } from '../store'
 import { useI18n } from 'vue-i18n'

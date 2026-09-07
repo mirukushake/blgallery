@@ -352,6 +352,10 @@ const medium = [
 						:items="metadata?.tags"
 						:ui="{ content: 'min-w-fit', tagsInput: 'w-10' }" />
 				</dd>
+				<dt class="text-xs text-gray-400 uppercase mt-3">ちるちる URL</dt>
+				<dd class="mb-4">
+					<UInput v-model="editBookUpdated.chil_url" class="w-full" />
+				</dd>
 				<dt class="text-xs text-gray-400 uppercase mt-4">Notes</dt>
 				<dd class="">
 					<UTextarea
