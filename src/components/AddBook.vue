@@ -174,6 +174,8 @@ function jsonParse() {
 
 	bookForm.value.title = json.title;
 	bookForm.value.published = json.release;
+	bookForm.value.chil_url = json.chilurl;
+	bookForm.value.cover = json.cover;
 	bookForm.value.label_id = label ? label.id : null;
 	bookForm.value.series_id = series ? series.id : null;
 	bookForm.value.manga = JSON.parse(json.manga);
